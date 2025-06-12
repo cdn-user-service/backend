@@ -1,0 +1,4608 @@
+swagger: '2.0'
+info:
+  description: antsxdp2.0 admin  接口
+  version: 2.0.0
+  title: antsxdp 2.0 -admin
+
+basePath: /antsxdp
+
+schemes:
+  - http
+
+#认证
+securityDefinitions:
+  api_key:
+    type: "apiKey"
+    name: "token"
+    in: "header"
+
+#定义接口数据
+paths:
+  /captcha.jpg:
+    get:
+      tags:
+        - 管理登录
+      summary: 获取验证码
+      produces:
+        - application/octet-stream
+      parameters:
+        - name: uuid
+          description: UUID
+          in: query
+          type: string
+          required: true
+  /sys-user/check:
+    get:
+      tags:
+        - 管理登录检测
+      summary: 管理登录
+      produces:
+        - application/json
+      parameters:
+        - name: userName
+          description: userName
+          in: query
+          type: string
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/Login'
+  /sys/login:
+    post:
+      tags:
+        - 管理登录
+      summary: 管理登录
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 管理员对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/LoginForm'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/Login'
+  /sys/appkey/login:
+    post:
+      tags:
+        - 管理登录
+      summary: 管理APPKEY登录
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"username\":\"test\",\"password\":\"123456\",\"appKey\":\"AAABBBCCC\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/Login'
+  /sys/google-auth/login:
+    post:
+      tags:
+        - 管理登录
+      summary: 管理google-auth登录
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"user\":\"test\",\"code\":\"123456\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/Login'
+  /sys/user/list:
+    post:
+      tags:
+        - 管理员管理
+      summary: 管理员列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"page\":\"1\",\"limit\":\"10\",\"username\":\"\"}"
+      responses:
+        '200':
+          description: 返回管理员列表
+          schema:
+            $ref: '#/definitions/SysUserEntityList'
+  /sys/user/info:
+    get:
+      tags:
+        - 管理员管理
+      summary: 当前管理员信息
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 返回当前管理员信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              user:
+                $ref: '#/definitions/SysUserEntity'
+  /sys/user/info/{userId}:
+    get:
+      tags:
+        - 管理员管理
+      summary: 获取管理员信息
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          description: 用户ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: 返回管理员信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              user:
+                $ref: '#/definitions/SysUserEntity'
+  /sys/user/password:
+    post:
+      tags:
+        - 管理员管理
+      summary: 修改密码
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 管理员对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/PasswordForm'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/save:
+    post:
+      tags:
+        - 管理员管理
+      summary: 添加管理员
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 管理员对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysUserEntityEdit'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/sys-user-module/update:
+    post:
+      tags:
+        - 管理员管理
+      summary: sys-user-module update
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 管理员对象
+          in: body
+          type: string
+          default: "{\"whiteIpStatus\":0}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/update:
+    post:
+      tags:
+        - 管理员管理
+      summary: 修改管理员
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 管理员对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysUserEntityEdit'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/delete:
+    post:
+      tags:
+        - 管理员管理
+      summary: 删除管理员
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"ids\":\"1,2,3\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/google-auth/binde:
+    post:
+      tags:
+        - 管理员管理
+      summary: google-auth 绑定
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"secretKey\":\"aabbcc1111\",\"code\":\"112233\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/google-auth/qrcode/view:
+    get:
+      tags:
+        - 管理员管理
+      summary: google-auth qr 获取
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+
+  /sys/user/google-auth/status:
+    get:
+      tags:
+        - 管理员管理
+      summary: google-auth status 修改
+      produces:
+        - application/json
+      parameters:
+        - name: status
+          description: status
+          in: query
+          type: integer
+          default: 0
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/login-white-ip/list:
+    post:
+      tags:
+        - 管理员管理
+      summary: login-white-ip list
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"page\":1,\"limit\":20,\"ip\":\"1\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/login-white-ip/save:
+    post:
+      tags:
+        - 管理员管理
+      summary: login-white-ip save
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"id\":0,\"ip\":\"1\",\"remark\":\"1\",\"status\":1}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/user/login-white-ip/delete:
+    post:
+      tags:
+        - 管理员管理
+      summary: login-white-ip delete
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"ids\":\"11,2233,44\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/role/list:
+    post:
+      tags:
+        - 角色管理
+      summary: 角色列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"page\":\"1\",\"limit\":\"10\",\"roleName\":\"\"}"
+      responses:
+        '200':
+          description: 返回角色列表
+          schema:
+            $ref: '#/definitions/SysRoleEntityList'
+  /sys/role/select:
+    get:
+      tags:
+        - 角色管理
+      summary: 当前账号角色列表
+      description: 如果是超级管理员，则能查询所有的角色列表
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 返回角色列表
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              list:
+                type: array
+                items:
+                  $ref: '#/definitions/SysRoleEntity'
+  /sys/role/info/{roleId}:
+    get:
+      tags:
+        - 角色管理
+      summary: 获取角色信息
+      produces:
+        - application/json
+      parameters:
+        - name: roleId
+          description: 角色ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: 返回角色信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              role:
+                $ref: '#/definitions/SysRoleEntity'
+  /sys/role/save:
+    post:
+      tags:
+        - 角色管理
+      summary: 添加角色
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 角色对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysRoleEntityEdit'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/role/update:
+    post:
+      tags:
+        - 角色管理
+      summary: 修改角色
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 角色对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysRoleEntityEdit'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/role/delete:
+    post:
+      tags:
+        - 角色管理
+      summary: 删除角色
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"ids\":\"1,2,3\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/menu/allPerms:
+    get:
+      tags:
+        - 菜单管理
+      summary: 所有权限
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 返回日志列表
+          schema:
+            $ref: '#/definitions/R'
+  /sys/menu/nav:
+    get:
+      tags:
+        - 菜单管理
+      summary: 导航菜单列表
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 返回导航菜单列表
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              menuList:
+                description: 菜单列表
+                type: array
+                items:
+                  $ref: '#/definitions/SysMenuEntity'
+              permissions:
+                description: 权限列表
+                type: array
+                items:
+                  type: string
+  /sys/menu/list:
+    get:
+      tags:
+        - 菜单管理
+      summary: 菜单列表
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 返回菜单列表
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SysMenuEntity'
+  /sys/menu/select:
+    get:
+      tags:
+        - 菜单管理
+      summary: 选择菜单
+      description: 添加、修改菜单的时候，选择上级菜单接口
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 返回菜单列表
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              menuList:
+                description: 菜单列表
+                type: array
+                items:
+                  $ref: '#/definitions/SysMenuEntity'
+  /sys/menu/info/{menuId}:
+    get:
+      tags:
+        - 菜单管理
+      summary: 获取菜单信息
+      produces:
+        - application/json
+      parameters:
+        - name: menuId
+          description: 菜单ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: 返回菜单信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              menu:
+                description: 菜单信息
+                $ref: '#/definitions/SysMenuEntity'
+  /sys/menu/save:
+    post:
+      tags:
+        - 菜单管理
+      summary: 添加菜单
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 菜单对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysMenuEntityEdit'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/menu/update:
+    post:
+      tags:
+        - 菜单管理
+      summary: 修改菜单
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 菜单对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysMenuEntityEdit'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/menu/delete/{menuId}:
+    post:
+      tags:
+        - 菜单管理
+      summary: 删除菜单
+      produces:
+        - application/json
+      parameters:
+        - name: menuId
+          description: 菜单ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+
+  /sys/log/list:
+    post:
+      tags:
+        - 系统日志
+      summary: 日志列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"page\":\"1\",\"limit\":\"10\",\"userType\":1,\"logType\":null,\"key\":\"\",\"username\":\"\"}"
+      responses:
+        '200':
+          description: 返回日志列表
+          schema:
+            $ref: '#/definitions/SysLogEntityList'
+  /sys/log/delete:
+    get:
+      tags:
+        - 系统日志
+      summary: 删除日志
+      produces:
+        - application/json
+      parameters:
+        - name: ids
+          description: ids
+          in: query
+          type: string
+          required: true
+          default: "1,2,3"
+      responses:
+        '200':
+          description: 返回日志列表
+          schema:
+            $ref: '#/definitions/SysLogEntityList'
+  /sys/config/list:
+    post:
+      tags:
+        - 参数管理
+      summary: 参数列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"page\":\"1\",\"limit\":\"10\",\"key\":\"\"}"
+      responses:
+        '200':
+          description: 返回参数列表
+          schema:
+            $ref: '#/definitions/SysConfigEntityList'
+  /sys/config/info/{id}:
+    get:
+      tags:
+        - 参数管理
+      summary: 获取参数信息
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: 参数ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: 返回参数信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              config:
+                description: 返回参数信息
+                $ref: '#/definitions/SysConfigEntity'
+  /sys/config/info2/{paramKey}:
+    get:
+      tags:
+        - 参数管理
+      summary: 获取参数信息
+      produces:
+        - application/json
+      parameters:
+        - name: paramKey
+          description: 参数paramKey
+          in: path
+          type: string
+          required: true
+      responses:
+        '200':
+          description: 返回参数信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              config:
+                description: 返回参数信息
+                $ref: '#/definitions/SysConfigEntity'
+  /sys/config/save:
+    post:
+      tags:
+        - 参数管理
+      summary: 添加参数
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 参数对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysConfigEntity'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/config/update/status/{id}:
+    get:
+      tags:
+        - 参数管理
+      summary: 更新参数信息状态
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: 参数ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/config/update/conf/status:
+    get:
+      tags:
+        - 参数管理
+      summary: 更新参数信息状态
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: 参数ID
+          in: query
+          type: integer
+          required: true
+        - name: status
+          description: 参数status
+          in: query
+          type: integer
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/config/update:
+    post:
+      tags:
+        - 参数管理
+      summary: 修改参数
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 参数对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysConfigEntity'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/config/delete:
+    post:
+      tags:
+        - 参数管理
+      summary: 删除参数
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"ids\":\"1,2,3\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/config/getParamClass:
+    get:
+      tags:
+        - 参数管理
+      summary: 参数名的具体参数
+      produces:
+        - application/json
+      parameters:
+        - name: paramKey
+          default: WEB_SITE_CONFIG_KEY
+          in: query
+          type: string
+          description: 参数名
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/config/ants/conf/view:
+    get:
+      tags:
+        - 参数管理
+      summary: 其它参数查看
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/config/export/db:
+    get:
+      tags:
+        - 参数管理
+      summary: db备份
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/config//test/send-mail:
+    post:
+      tags:
+        - 参数管理
+      summary: 测试邮件
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: 参数名
+          default: "{\"toMail\":\"aa@aa.com\"}"
+          required: true
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/oss/list:
+    post:
+      tags:
+        - 文件服务
+      summary: 文件列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"key\":\"\"}"
+      responses:
+        '200':
+          description: 返回文件列表
+          schema:
+            $ref: '#/definitions/SysOssEntityList'
+  /sys/oss/config:
+    get:
+      tags:
+        - 文件服务
+      summary: 云存储配置信息
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 返回云存储配置信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              config:
+                description: 云存储配置信息
+                $ref: '#/definitions/SysCloudStorageEntity'
+  /sys/oss/saveConfig:
+    post:
+      tags:
+        - 文件服务
+      summary: 保存云存储配置信息
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 参数对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/SysCloudStorageEntity'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/oss/upload:
+    post:
+      tags:
+        - 文件服务
+      summary: 上传文件
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: file
+          description: 文件
+          in: formData
+          type: file
+          required: true
+      responses:
+        '200':
+          description: 返回文件列表
+          schema:
+            $ref: '#/definitions/FileUpload'
+  /sys/oss/delete:
+    post:
+      tags:
+        - 文件服务
+      summary: 删除文件
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"ids\":\"1,2,3\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+
+  /sys/schedule/list:
+    post:
+      tags:
+        - 定时任务
+      summary: 定时任务列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"page\":\"1\",\"limit\":\"10\",\"beanName\":\"\"}"
+      responses:
+        '200':
+          description: 返回定时任务列表
+          schema:
+            $ref: '#/definitions/ScheduleJobEntityList'
+  /sys/schedule/info/{jobId}:
+    get:
+      tags:
+        - 定时任务
+      summary: 获取定时任务信息
+      produces:
+        - application/json
+      parameters:
+        - name: jobId
+          description: 定时任务ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: 返回定时任务信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              schedule:
+                description: 定时任务信息
+                $ref: '#/definitions/ScheduleJobEntity'
+  /sys/schedule/save:
+    post:
+      tags:
+        - 定时任务
+      summary: 添加定时任务
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 定时任务对象
+          in: body
+          type: string
+          default: "{\"beanName\":\"curlrequesturl\",\"methodName\":\"curlrequesturl\",\"params\":\"http://www.cdn.com\",\"cronExpression\":\"* * * * * ?\",\"status\":0,\"remark\":\"url\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/schedule/update:
+    post:
+      tags:
+        - 定时任务
+      summary: 修改定时任务
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 定时任务对象
+          in: body
+          type: string
+          schema:
+            $ref: '#/definitions/ScheduleJobEntity'
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/schedule/delete:
+    post:
+      tags:
+        - 定时任务
+      summary: 删除定时任务
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ID列表
+          in: body
+          type: string
+          default: "{\"ids\":\"1,2,3\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/schedule/run:
+    post:
+      tags:
+        - 定时任务
+      summary: 立即执行任务
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          default: "{\"ids\":\"1,2,3\"}"
+          in: body
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/schedule/pause:
+    post:
+      tags:
+        - 定时任务
+      summary: 暂停定时任务
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          default: "{\"ids\":\"1,2,3\"}"
+          in: body
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/schedule/resume:
+    post:
+      tags:
+        - 定时任务
+      summary: 恢复定时任务
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          default: "{\"ids\":\"1,2,3\"}"
+          in: body
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+
+  /sys/schedule/jobBeanList:
+    get:
+      tags:
+        - 定时任务
+      summary: 获取定时任务bean信息
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/scheduleLog/list:
+    post:
+      tags:
+        - 定时任务
+      summary: 定时任务日志列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: map
+          in: body
+          type: string
+          required: true
+          default: "{\"page\":\"1\",\"limit\":\"10\",\"beanName\":\"\"}"
+      responses:
+        '200':
+          description: 返回定时任务日志列表
+          schema:
+            $ref: '#/definitions/ScheduleJobLogEntityList'
+  /sys/scheduleLog/info/{logId}:
+    get:
+      tags:
+        - 定时任务
+      summary: 获取定时任务日志信息
+      produces:
+        - application/json
+      parameters:
+        - name: logId
+          description: 日志ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: 返回定时任务日志信息
+          schema:
+            type: object
+            properties:
+              code:
+                description: 状态码 0：成功  非0：失败
+                type: integer
+                format: int32
+              schedule:
+                description: 定时任务日志信息
+                $ref: '#/definitions/ScheduleJobLogEntity'
+  /sys/tb/user/list:
+    post:
+      tags:
+        - 用户管理
+      summary: 用户列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "分页获取用户列表"
+          default: "{\"page\":1,\"limit\":10,\"user\":\"demo\"}"
+          in: body
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/tb/user/detail:
+    get:
+      tags:
+        - 用户管理
+      summary: 用户详情
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          description: "用户详情"
+          default: 1
+          in: query
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/tb/user/deleta:
+    post:
+      tags:
+        - 用户管理
+      summary: 删除用户
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "批量删除用户"
+          default: "{\"ids\":\"1,2,3\"}"
+          in: body
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/tb/user/modify:
+    post:
+      tags:
+        - 用户管理
+      summary: 修改用户
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "修改用户 为空项不修改"
+          default: "{\"userId\":123,\"username\":\"username\",\"mobile\":\"13800000000\",\"mail\":\"demo@ants.com\",\"unvalidModel\":\"\",\"password\":\"password\",\"status\":0}"
+          in: body
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/tb/user/create:
+    post:
+      tags:
+        - 用户管理
+      summary: 创建用户
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "创建用户 密码为空时密码默认为123456"
+          default: "{\"username\":\"username\",\"mobile\":\"13800000000\",\"mail\":\"demo@ants.com\",\"password\":\"password\"}"
+          in: body
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/tb/user/back/login:
+    get:
+      tags:
+        - 用户管理
+      summary: 后台登录
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          default: 1
+          in: query
+          type: integer
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/list:
+    post:
+      tags:
+        - 站点管理
+      summary: 分页获取站点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "user 搜索用户，sitename为搜索主站名"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"mainServerName\":\"abc.com\",\"user\":\"demo\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/create:
+    post:
+      tags:
+        - 站点管理
+      summary: 创建站点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "{\"userId\":1,\"serialNumber\":1,\"mainServerName\":\"test.com\"}"
+          in: body
+          required: true
+          default: "{\"userId\":1,\"serialNumber\":1,\"mainServerName\":\"test.com\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/site/info:
+    get:
+      tags:
+        - 站点管理
+      summary: 站名获取站点详情
+      produces:
+        - application/json
+      parameters:
+        - name: name
+          default: 1
+          in: query
+          type: string
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/batcreate:
+    post:
+      tags:
+        - 站点管理
+      summary: 批量创建站点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "{\"userId\":61,\"serialNumber\":\"1650954704735002\",\"serverSource\":[\"test00.com,test02.com,test03.com|1.1.1.1\",\"test1.com,test11.com,test12.com|1.1.1.1\"]}"
+          in: body
+          required: true
+          default: "{\"userId\":61,\"serialNumber\":\"1650954704735002\",\"mainServerNames\":\"test.com,test2.com,test3.com\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/change/status:
+    get:
+      tags:
+        - 站点管理
+      summary: 修改站点状态
+      produces:
+        - application/json
+      parameters:
+        - name: siteId
+          description: "站点Id"
+          in: query
+          required: true
+          default: 1
+          type: integer
+        - name: status
+          description: "状态0=暂停； 1=开启"
+          in: query
+          required: true
+          default: 1
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/change/suit:
+    post:
+      tags:
+        - 站点管理
+      summary: 修改套餐
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: " 修改套餐 "
+          in: body
+          required: true
+          default: "{\"siteId\":1,\"serialNumber\":\"1661408072578003\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/build/sys/waf/rule:
+    post:
+      tags:
+        - 站点管理
+      summary: 生成WAF规则
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "生成WAF规则 "
+          in: body
+          required: true
+          default: "{\"siteId\":1,\"perMinuteReq\":1000,\"coefficient\":1,\"forbidSeal\":0,\"limitUrlRate\":10}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/delete:
+    post:
+      tags:
+        - 站点管理
+      summary: 批量删除站点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: " 批量删除站点 ，id列表的字符串形式 "
+          in: body
+          required: true
+          default: "{\"ids\":\"0,1\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/delete/attr:
+    post:
+      tags:
+        - 站点管理
+      summary: 删除属性
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: " 删除属性 "
+          in: body
+          required: true
+          default: "{\"id\":0,\"pkey\":\"xxx\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/detail:
+    post:
+      tags:
+        - 站点管理
+      summary: 站点详情
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "按GROUP name 获取属性数据，suit 为套餐信息,ssl为分组名"
+          in: body
+          required: true
+          default: "{\"id\":1,\"group\":\"suit,ssl\",\"key\":\"cache_config\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/SaveSiteAttr:
+    post:
+      tags:
+        - 站点管理
+      summary: 站点属性更新与创建
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "单一取值不用传ID，多列属性构造jsonArray(新增0:*,修改id：*)"
+          in: body
+          required: true
+          default: "{\"siteId\":1,\"bind_port\":\"80|443\",\"alias\":[{\"id\":0,\"value\":\"acom.com\"}],\"cross\":1,\"source_base_info\":[{\"id\":0,\"protocol\":\"http\",\"port\":80,\"s_protocol\":\"http\",\"upstream\":\"polling\",\"source_set\":\"ip\",\"line\":[{\"ip\":\"3.3.3.4\",\"port\":\"8988\",\"line\":2,\"weight\":1}]}]}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/batch/modify/site_attr:
+    post:
+      tags:
+        - 站点管理
+      summary: 批量站点属性更新
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          in: body
+          required: true
+          default: "{\"siteIds\":\"1\",\"key\":\"port\",\"value\":\"1\",}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/batch/search/modify/site_attr:
+    post:
+      tags:
+        - 站点管理
+      summary: 批量匹配修改站点属性
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          in: body
+          required: true
+          default: "{\"siteIds\":\"1\",\"key\":\"port\",\"s_value\":\"1\",\"t_value\":\"1\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/ChangeAttrStatus:
+    post:
+      tags:
+        - 站点管理
+      summary: 修改站点属性状态
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "修改站点属性状态"
+          in: body
+          required: true
+          default: "{\"userId\":1,\"siteId\":1,\"pkey\":\"waf\",\"status\":0,\"attrId\":0}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/ChangeAttrWeight:
+    post:
+      tags:
+        - 站点管理
+      summary: 修改站点属性状态
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "修改站点属性排序opMode=1|-1|0"
+          in: body
+          required: true
+          default: "{\"userId\":1,\"siteId\":1,\"pkey\":\"waf\",\"attrId\":1,\"opMode\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/attr/enums:
+    get:
+      tags:
+        - 站点管理
+      summary: 站点参数遍历
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/getPrometheus:
+    post:
+      tags:
+        - 站点管理
+      summary: 获取Prometheus
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "获取Prometheus"
+          in: body
+          required: true
+          default: "{\"path\":\"/api/v1/query_range\",\"param\":\"query=node_time_seconds&start=1652321843.779&end=1652325443.779&step=14\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/query/elk:
+    post:
+      tags:
+        - 站点管理
+      summary: 获取elk
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "获取elk"
+          in: body
+          required: true
+          default: "{\"path\":\"/api/v1/query_range\",\"param\":\"query=node_time_seconds&start=1652321843.779&end=1652325443.779&step=14\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/ai/waf/modelling:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 构建 AI 模型
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "body"
+          in: body
+          required: true
+          default: "{\"mode\":1,\"startTime\":\"2023-12-4 00:00:00\",\"endTime\":\"2023-12-4 23:00:00\",\"maxCount\":1000000}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/site/site/clean/cache:
+    post:
+      tags:
+        - 站点管理
+      summary: 清理缓存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "清理缓存"
+          in: body
+          required: true
+          default: "{\"urls\":\"https://www.cdn.com/url1$,https://www.cdn.com.*,https://www.cdn.com/abc/d/.*,https://www.cdn.com.*\\.(jpg|bmp|js|css)$\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/site/waf/intercept/result/data:
+    post:
+      tags:
+        - 站点管理
+      summary: 获取waf规则数据详情
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "获取waf规则数据详情"
+          in: body
+          required: true
+          default: "{\"nodeIp\":\"1.1.1.1\",\"serverName\":\"waf.cdn.com\",\"sourceIp\":\"1.2.3.4\",\"interceptMode\":\"30*\",\"date\":\"202208080101*\",\"page\":1,\"limit\":20}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/pull/cache:
+    post:
+      tags:
+        - 站点管理
+      summary: 缓存预热
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "缓存预热"
+          in: body
+          required: true
+          default: "{\"urls\":\"http://waf.cdn.com/download,http://t.test.cdn.cn/public/css/\",\"ips\":\"1.1.1.1\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/prefetch/cache/list:
+    post:
+      tags:
+        - 站点管理
+      summary: 缓存预取
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: " "
+          in: body
+          required: true
+          default: "{}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/prefetch/cache/save:
+    post:
+      tags:
+        - 站点管理
+      summary: 缓存预取保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: " "
+          in: body
+          required: true
+          default: "{}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/site/prefetch/cache/delete:
+    post:
+      tags:
+        - 站点管理
+      summary: 缓存预取删除
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: " "
+          in: body
+          required: true
+          default: "{}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/stream/proxy/list:
+    post:
+      tags:
+        - 端口转发管理
+      summary: 分页获取
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"user\":\"a\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/stream/proxy/sava:
+    post:
+      tags:
+        - 端口转发管理
+      summary: 保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          in: body
+          required: true
+          default:  "{\"id\":0,\"userId\":61,\"serialNumber\":\"1650954704735002\",\"status\":1,\"confInfo\":\"{\\\"listen\\\":1456,\\\"server\\\":[\\\"172.16.1.5:80 weight=5 max_fails=3 fail_timeout=30s\\\",\\\"2.2.2.2:880\\\"],\\\"server_mode\\\":\\\"hash $remote_addr consistent\\\",\\\"proxy_connect_timeout\\\":\\\"60s\\\",\\\"proxy_timeout\\\":\\\"30s\\\"}\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/stream/proxy/batch/delete:
+    post:
+      tags:
+        - 端口转发管理
+      summary: 批量删除
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          in: body
+          required: true
+          default: "{\"ids\":\"1,2,3\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/stream/proxy/detail:
+    get:
+      tags:
+        - 端口转发管理
+      summary: detail
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: "id"
+          in: query
+          required: true
+          default: 1
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/product/list:
+    post:
+      tags:
+        - 产品管理
+      summary: 分页获取产品
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "key搜索name,productTypes为搜索的类型"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"key\":\"abc\",\"productTypes\":\"10,11\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/product/all:
+    get:
+      tags:
+        - 产品管理
+      summary: 按类型获取所有产品
+      produces:
+        - application/json
+      parameters:
+        - name: productTypes
+          description: ""
+          in: query
+          required: true
+          default: 11,12,13
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/product/attr/object:
+    get:
+      tags:
+        - 产品管理
+      summary: 获取套餐属性
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/product/save:
+    post:
+      tags:
+        - 产品管理
+      summary: 产品保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "无ID或ID=0键值为新增，存在ID键值为修改"
+          in: body
+          required: true
+          default: "{\"id\":0,\"product_type\":10,\"name\":\"免费套餐\",\"productJson\":\"{\\\"m\\\":{\\\"value\\\":1,\\\"status\\\":0},\\\"s\\\":{\\\"value\\\":10100,\\\"status\\\":0},\\\"y\\\":{\\\"value\\\":20100,\\\"status\\\":1}}\",\"attrJson\":\"[{\\\"id\\\":9,\\\"name\\\":\\\"site\\\",\\\"unit\\\":\\\"个\\\",\\\"valueType\\\":\\\"int\\\",\\\"value\\\":1,\\\"status\\\":1,\\\"weight\\\":1000}]\",\"serverGroupIds\":\"1,2\",\"status\":1,\"weight\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/product/delete:
+    get:
+      tags:
+        - 产品管理
+      summary: 产品删除
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          default: 1
+          in: query
+          required: true
+          type: integer
+          description: id
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/productAttr/list:
+    post:
+      tags:
+        - 产品管理
+      summary: 分页获取产品属性
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "key 搜索name"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"key\":\"abc\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/productAttr/all:
+    get:
+      tags:
+        - 产品管理
+      summary: 所有产品属性
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/productAttr/save:
+    post:
+      tags:
+        - 产品管理
+      summary: 产品属性保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "产品属性对象，无ID键值为新增，存在ID键值为修改"
+          in: body
+          required: true
+          default: "{\"id\":0,\"name\":\"流量\",\"unit\":\"1MB\",\"valueType\":\"number\",\"value\":\"1\",\"status\":1,\"weight\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/productAttr/delete:
+    get:
+      tags:
+        - 产品管理
+      summary: 产品属性删除
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          default: 1
+          in: query
+          required: true
+          type: integer
+          description: id
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/suit/list:
+    post:
+      tags:
+        - 产品管理
+      summary: 套餐列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: 分页获取套餐 productTypes 为空时，默认为10,11
+          default: "{\"page\":1,\"limit\":10,\"serialNumber\":\"1\",\"user\":\"test\",\"startTime\":0,\"endTime\":1950769152,\"mode\":1,\"productTypes\":\"10,11\"}"
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/suit/suit/listbyuser:
+    post:
+      tags:
+        - 产品管理
+      summary: 根据用户ID获取所有套餐列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: 获取套餐
+          default: "{\"userId\":61}"
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/suit/suit/detail:
+    get:
+      tags:
+        - 产品管理
+      summary: 套餐详情
+      produces:
+        - application/json
+      parameters:
+        - name: serialNumber
+          in: query
+          type: string
+          description: serialNumber
+          default: "1650616609254004"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/suit/attr/update:
+    post:
+      tags:
+        - 产品管理
+      summary: 修改用户当前套餐属性
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: 获取套餐
+          default: "{\"id\":1,\"endTime\":\"2022-10-11 12:12:12\",\"attrJson\":\"{\"live_data\":\"1\",\"site\":\"12\",\"sms\":\"100\",\"private_waf\":\"1\",\"monitor\":\"1\",\"port_forwarding\":\"5\",\"flow\":\"100\",\"ai_waf\":\"1\",\"public_waf\":\"1\"}\"}"
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/R"
+  /sys/cdn/suit/order/list:
+    post:
+      tags:
+        - 财物管理
+      summary: 订单列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "订单列表"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"user\":\"\",\"serialNumber\":\"1\",\"orderType\":10,\"status\":10}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/order/delete:
+    get:
+      tags:
+        - 财物管理
+      summary: 订单删除
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: query
+          type: string
+          description: id
+          default: "1"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/order/create:
+    post:
+      tags:
+        - 财物管理
+      summary: 创建订单
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "创建订单"
+          in: body
+          required: true
+          default: "{\"userId\":61,\"orderType\":10,\"targetId\":1,\"initJson\":\"{\\\"type\\\":\\\"m\\\",\\\"sum\\\":1}\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/suit/create/postpaid:
+    post:
+      tags:
+        - 财物管理
+      summary: 创建后付费订单
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "创建后付费订单"
+          in: body
+          required: true
+          default: "{\"userId\":61,\"productId\":11}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/suit/cancellation:
+    get:
+      tags:
+        - 产品管理
+      summary: 套餐删除|套餐注销
+      produces:
+        - application/json
+      parameters:
+        - name: SerialNumber
+          in: query
+          type: string
+          description: SerialNumber
+          default: "1650616609254004"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/suit/liquidation:
+    get:
+      tags:
+        - 产品管理
+      summary: 后付费套餐清算
+      produces:
+        - application/json
+      parameters:
+        - name: SerialNumber
+          in: query
+          type: string
+          description: SerialNumber
+          default: "1650616609254004"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/user/suit/bytes/detail:
+    post:
+      tags:
+        - 产品管理
+      summary: 用户套餐流量使用详情
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "用户套餐流量使用详情"
+          in: body
+          required: true
+          default: "{\"SerialNumber\":\"11111\",\"startTime\":11,\"endTime\":11}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/suit/suit/status/modify:
+    post:
+      tags:
+        - 产品管理
+      summary: 修改用户套餐状态
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "修改用户套餐状态status=0,1"
+          in: body
+          required: true
+          default: "{\"SerialNumber\":\"11111\",\"status\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/pay/adminRecharge:
+    post:
+      tags:
+        - 财物管理
+      summary: 管理员人工充值
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "管理员充值"
+          in: body
+          required: true
+          default: "{\"userId\":61,\"amount\":10,\"remark\":\"remark\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/pay/order/detail:
+    get:
+      tags:
+        - 财物管理
+      summary: 订单详情
+      produces:
+        - application/json
+      parameters:
+        - name: SerialNumber
+          default: '1650361752071001'
+          in: query
+          required: true
+          type: string
+          description: SerialNumber
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+
+  /sys/common/enums:
+    get:
+      tags:
+        - 公共参数
+      summary: 类型说明
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/common/index:
+    get:
+      tags:
+        - 公共参数
+      summary: 公共配置参数
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/common/request:
+    post:
+      tags:
+        - 公共参数
+      summary: 公共request
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "公共request"
+          in: body
+          required: true
+          default: "{}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/common/dispatch:
+    get:
+      tags:
+        - 公共参数
+      summary: 调度测试
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/info:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 授权信息
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/page/list:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 分页节点列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "分页节点列表"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"ip\":\"1.1.1.1\",\"clientType\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/push/feedback/detail:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 节点推送反馈详情
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: "节点id"
+          in: query
+          required: true
+          default: 3
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/push/feedback/clean:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 节点推送反馈详情清理
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: "节点id"
+          in: query
+          required: true
+          default: 3
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/add/backup/ip:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 节点添加备用节点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "节点添加备用节点"
+          in: body
+          required: true
+          default: "{\"id\":1,\"clientIps\":\"1.1.1.1,2.2.2.3\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/add/ip:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 节点添加节点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "节点添加备用节点"
+          in: body
+          required: true
+          default: "{\"id\":1,\"clientIps\":\"1.1.1.1,2.2.2.3\",\"clientType\":2}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/conf/keys:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 节点可独立配置参数集合
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth//make/file/invoke/method:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 模板取值method
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/save/conf/info:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 节点添加节点配置
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "节点添加节点配置"
+          in: body
+          required: true
+          default: "{\"id\":1,\"proxy_max_temp_file_size\":\"1024m\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/sync:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 与ants同步所有节点信息
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/addByNodeRequest:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 节点注册[节点向主控发起注册]
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/SaveByMainControl:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 节点注册与修改[主控向节点发起注册与修改]
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "主控向节点发起注册与修改"
+          in: body
+          required: true
+          default: "{\"id\":1,\"clientIp\":1.1.1.1,\"clientIp2\":\"1.1.1.1\",\"clientInfo\":\"112233\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/attr/save:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 节点属性修改
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "节点属性修改"
+          in: body
+          required: true
+          default: "{\"id\":1,\"status\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/ssh/save:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 节点SSH保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "节点SSH保存"
+          in: body
+          required: true
+          default: "{\"id\":1,\"sshPort\":22,\"sshUser\":\"11\",\"sshPwd\":\"112233\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/enable:
+     get:
+       tags:
+         - 授权与节点管理
+       summary: 节点授权【主控向ants发起注册】
+       produces:
+         - application/json
+       parameters:
+         - name: id
+           description: "节点授权 id"
+           in: query
+           required: true
+           default: 3
+           type: integer
+       responses:
+         '200':
+           schema:
+             $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/delete:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 节点删除
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: "节点ID"
+          in: query
+          required: true
+          default: 3
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/node/info:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 节点详情
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: "节点id详情"
+          in: query
+          required: true
+          default: 3
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/list:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 节点业务分组列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "节点分组列表"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"key\":\"\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/client/area/list:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 节点区域分组列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "节点分组列表"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"name\":\"\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/client/area/save:
+      post:
+        tags:
+          - 节点分组管理
+        summary: 保存节点区域分组列表
+        produces:
+          - application/json
+        parameters:
+          - name: body
+            description: "节点分组列表"
+            in: body
+            required: true
+            default: "{\"id\":1,\"name\":\"\",\"remark\":\"\"}"
+            type: string
+        responses:
+          '200':
+            schema:
+              $ref: '#/definitions/R'
+  /sys/cdnsys/auth/client/area/delete:
+        post:
+          tags:
+            - 节点分组管理
+          summary: 删除节点区域分组列表
+          produces:
+            - application/json
+          parameters:
+            - name: body
+              description: "节点分组列表"
+              in: body
+              required: true
+              default: "{\"ids\":\"1,3\"}"
+              type: string
+          responses:
+            '200':
+              schema:
+                $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/add_client_ids:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 分组添加节点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "分组添加节点"
+          in: body
+          required: true
+          default: "{\"id\":\"1\",\"ids\":\"1,2,3\",\"parentId\":0,\"line\":\"default\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/modify_client_dns_info:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 分组中的节点DNS 配置修改
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "配置修改"
+          in: body
+          required: true
+          default: "{\"id\":1,\"ttl\":600,\"status\":1,\"line\":\"默认\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/delete_client_ids:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 分组删除节点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "分组删除节点 id=group,ids=client_ids"
+          in: body
+          required: true
+          default: "{\"id\":\"1\",\"ids\":\"1,2,3\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/get/unuesd/client:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 分组中未使用的节点
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "分组中未使用的节点"
+          in: body
+          required: true
+          default: "{\"groupId\":\"1\",\"parentId\":0}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/get_detail:
+    get:
+      tags:
+        - 节点分组管理
+      summary: 分组信息
+      produces:
+        - application/json
+      parameters:
+        - name: groupId
+          description: "分组iD"
+          in: query
+          required: true
+          default: 1
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/create:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 创建节点分组
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "创建节点分组"
+          in: body
+          required: true
+          default: "{\"name\":\"默认分组\",\"dnsConfigId\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/save:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 保存节点分组
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "保存节点分组"
+          in: body
+          required: true
+          default: "{\"id\":0,\"name\":\"默认分组\",\"dnsConfigId\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/delete:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 节点分组删除
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "节点分组删除"
+          in: body
+          required: true
+          default: "{\"id\":\"1,2,3\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/already/release/short_cc/intercept/list:
+    get:
+      tags:
+        - IP管理
+      summary: 当前已解封IP数据
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/release/short_cc/intercept/ips:
+    post:
+      tags:
+        - IP管理
+      summary: 解封IP
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "解封IP"
+          in: body
+          required: true
+          default: "{\"ips\":\"1.1.1.1,2.3.4.5\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/push/enum:
+    get:
+      tags:
+        - 数据推送管理
+      summary: enum
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/push/feedbacks/detail:
+    get:
+      tags:
+        - 数据推送管理
+      summary: 节点发起配置反馈查看
+      produces:
+        - application/json
+      parameters:
+        - name: types
+          in: query
+          required: false
+          description: "1=站点,2=详细反馈"
+          default: 1,2
+          type: string
+        - name: index
+          in: query
+          required: true
+          description: ""
+          default: 1
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/pushDataToNode:
+    get:
+      tags:
+        - 数据推送管理
+      summary: 推送所有数据到节点
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/pushSiteConfToNode:
+    get:
+      tags:
+        - 数据推送管理
+      summary: 生成站点配置文件到节点
+      produces:
+        - application/json
+      parameters:
+        - name: siteId
+          type: integer
+          default: 1
+          required: true
+          in: query
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/pushTaskStatus:
+    get:
+      tags:
+        - 数据推送管理
+      summary: 待完任务数量和任务状态
+      produces:
+        - application/json
+      parameters:
+        - name: type
+          type: integer
+          default: 0
+          in: query
+          description: "0==所有信息;1=数里;2=状态;"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/pushByInputInfo:
+    post:
+      tags:
+        - 数据推送管理
+      summary: 根据输入推送数据
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "根据输入信息推送数据"
+          in: body
+          required: true
+          default: "{\"all_file\":\"null\",\"delete_model_file\":\"/home/local/nginx/conf/conf\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+
+  /sys/cdnsys/auth/runTask:
+    get:
+      tags:
+        - 数据推送管理
+      summary: 执行待完成任务
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/list:
+    post:
+      tags:
+        - DNS 接口管理
+      summary: 获取分页列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "获取DNS API 列表"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"userType\":\"\",\"source\":\"\",\"user\":\"\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/save:
+    post:
+      tags:
+        - DNS 接口管理
+      summary: 保存DNS 接口
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "保存DNS 接口"
+          in: body
+          required: true
+          default: "{\"id\":0,\"userType\":1,\"userId\":1,\"remark\":\"aliyun\",\"source\":\"aliyun\",\"appDomain\":\"doo.com\",\"appId\":\"123\",\"appKey\":\"123\",\"appUrl\":\"kUrl\",\"status\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/delete:
+    post:
+      tags:
+        - DNS 接口管理
+      summary: 删除DNS  接口
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "删除 DNS 接口"
+          in: body
+          required: true
+          default: "{\"ids\":\"1,2\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/all:
+    get:
+      tags:
+        - DNS 接口管理
+      summary: 所有DNS API(后台创建的) 接口
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/record/list:
+    get:
+      tags:
+        - DNS 接口管理
+      summary: API 对应域名的解析记录列表
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: query
+          type: integer
+          default: 3
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/line/list:
+    get:
+      tags:
+        - DNS 接口管理
+      summary: API 对应域名的线路列表
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: query
+          type: integer
+          default: 3
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/record/add:
+    post:
+      tags:
+        - DNS 接口管理
+      summary: 添加解析记录
+      produces:
+        - application/json
+      parameters:
+        - nae: body
+          description: "添加解析记录"
+          in: body
+          required: true
+          default: "{\"id\":1,\"top\":\"cdn20\",\"recordType\":\"A\",\"line\":\"default\",\"value\":\"1.1.1.1\",\"ttl\":600}"
+          type: object
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/record/remove:
+    post:
+      tags:
+        - DNS 接口管理
+      summary: 删除解析记录
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "添加解析记录"
+          in: body
+          required: true
+          default: "{\"id\":3,\"recordId\":\"1\"}"
+          type: object
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/record/clean:
+    post:
+      tags:
+        - DNS 接口管理
+      summary: 删除解析记录
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "删除解析记录"
+          in: body
+          required: true
+          default: "{\"dnsConfigId\":3,\"mainDomain\":\"1\",\"top\":\"\",\"recordType\":\"\",\"line\":\"\",\"value\":\"\",\"ttl\":\"\"}"
+          type: object
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/record/modify:
+    post:
+      tags:
+        - DNS 接口管理
+      summary: 修改解析记录
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "添加解析记录"
+          in: body
+          required: true
+          default: "{\"id\":1,\"recordId\":\"112233\",\"top\":\"cdn20\",\"recordType\":\"A\",\"line\":\"default\",\"value\":\"1.1.1.1\",\"ttl\":600}"
+          type: object
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/dnsapi/record/info:
+    post:
+      tags:
+        - DNS 接口管理
+      summary: 根据参数获取解析记录
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "根据参数获取解析记录"
+          in: body
+          required: true
+          default: "{\"id\":1,\"top\":\"cdn20\",\"recordType\":\"A\",\"line\":\"default\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/admin/tool/node/ping:
+    get:
+      tags:
+        - 运维工具
+      summary: 节点连通测试
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/admin/tool/redis/data:
+    post:
+      tags:
+        - 运维工具
+      summary: redis数据
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "根据参数获取REDIS 数据，空为获取集合"
+          in: body
+          required: true
+          default: "{\"key\":\"\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/admin/tool/node/setLogLevel:
+    post:
+      tags:
+        - 运维工具
+      summary: 设置节点日志输出类型
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          in: body
+          required: true
+          default: "{\"ids\":\"1,2,3\",\"level\":\"debug\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/admin/tool/error.log:
+    get:
+      tags:
+        - 运维工具
+      summary: 获取节点日志
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: ""
+          in: query
+          required: true
+          default: 1
+          type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/admin/tool/enums:
+    get:
+      tags:
+        - 运维工具
+      summary: 获取指令
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/pushCommandToNodes:
+    post:
+      tags:
+        - 运维工具
+      summary: 批量向节点发起指令
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "ids 为节点IDs,cid为指令ID"
+          in: body
+          required: true
+          default: "{\"ids\":\"1,2,3\",\"cid\":1}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/checkSitesInNode:
+    post:
+      tags:
+        - 运维工具
+      summary: 批量检测站点状态
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "IDS 为siteIds,对所有节点查看站点"
+          in: body
+          required: true
+          default: "{\"ids\":\"1,2,3\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/GetIndexChartData:
+    get:
+      tags:
+        - 公共参数
+      summary: 图表数据源
+      produces:
+        - application/json
+      parameters:
+        - name: keys
+          description: keys
+          in: query
+          required: true
+          default: ""
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/update/static/variable:
+    post:
+      tags:
+        - 公共参数
+      summary: 更新变量
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          in: body
+          required: true
+          default: "{\"protocol\":\"http\",\"port\":\"80\",\"server\":\"demo.cdn.com\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/check/key/show:
+    get:
+      tags:
+        - 授权与节点管理
+      summary: 检测接入TOKEN与url
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/check/import:
+    post:
+      tags:
+        - 授权与节点管理
+      summary: 检测结果导入
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "NodeList返回待检测节点IP列表;NodeResult为检测节点结果入库"
+          in: body
+          required: true
+          default: "{\"token\":\"\",\"NodeCheckResult\":\"1.1.1.1#1,2.2.2.2#0\",\"type\":\"NodeResult|NodeList\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/group/node/stable/infos:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 监测状态
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "监测状态"
+          in: body
+          required: true
+          default: "{\"page\":1,\"limit\":10,\"groupId\":1,\"key\":\"\"}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/auth/migrate/master:
+    post:
+      tags:
+        - 节点分组管理
+      summary: 迁移主控
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: "迁移主控"
+          in: body
+          required: true
+          default: "{\"masterIp\":\"1.1.1.1\",\"redisPwd\":\"11122233\",\"redisPort\":6379}"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/version/GetVersionData:
+    get:
+      tags:
+        - 版本管理
+      summary: 当前版本
+      produces:
+        - application/json
+      parameters:
+        - name: type
+          description: "为空查询所有"
+          in: query
+          required: false
+          default: "web_controller"
+          type: string
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/version/GetUpdateStatus:
+    get:
+      tags:
+        - 版本管理
+      summary: 后台版本更新任务状态
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/version/version/update:
+    get:
+      tags:
+        - 版本管理
+      summary: 更新当前版本
+      produces:
+        - application/json
+      parameters:
+        - name: goods
+          in: query
+          type: string
+          description: 类型[web_controller,web_view_manager,web_view_user,db]
+          required: true
+          default: web_controller
+        - name: hash
+          in: query
+          type: string
+          description: hash[d4c057342594679bbbfe2db7373801c7]
+          required: true
+          default: d4c057342594679bbbfe2db7373801c7
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/ip/control/list:
+    post:
+      tags:
+        - IP管理
+      summary: ip列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: "control:-1=所有,0=未定义,1=白名单（7层）,2=7层黑名单,3=3层黑名单"
+          default: "{\"parentId\":0,\"page\":1,\"limit\":10,\"control\":-1,\"ip\":\"\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/ip/control/save:
+    post:
+      tags:
+        - IP管理
+      summary: ip（分组） 保存与修改
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description:
+          default: "{\"id\":0,\"parentId\":0,\"ip\":\"1.1.1.1\",\"control\":1,\"status\":0,\"remark\":\"\",,\"ips\":\"1.1.1.1,1.2.2.2\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/ip/control/bat/child/save:
+    post:
+      tags:
+        - IP管理
+      summary: ip 批量保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description:
+          default: "{\"parentId\":0,\"ips\":\"1.1.1.1,2.2.2.2\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/ip/control/batch/delete:
+    post:
+      tags:
+        - IP管理
+      summary: ip删除
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description:
+          default: "{\"ids\":\"1,2,3\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdnsys/ip/control/sync/ants/ip/data:
+    get:
+      tags:
+        - IP管理
+      summary: 同步更新Auth IP 数据
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: query
+          type: integer
+          description: '为空或0 同步所有'
+          default: 1
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/certify/list:
+    post:
+      tags:
+        - 证书申请管理
+      summary: 申请列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: "status 0==待签发 1=签发成功 2=签发失败 "
+          default: "{\"page\":1,\"limit\":10,\"user\":\"\",\"key\":\"\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/certify/statistics:
+    get:
+      tags:
+        - 证书申请管理
+      summary: 统计
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/certify/save:
+    post:
+      tags:
+        - 证书申请管理
+      summary: 保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: "创建与修改name 与 remark"
+          default: "{\"id\":0,\"commonName\":\"www.cdn.com\",\"remark\":\"cdn\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/certify/batDelete:
+    post:
+      tags:
+        - 证书申请管理
+      summary: 删除
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: ""
+          default: "{\"ids\":\"1,2,3\"}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/certify/apply/certificate:
+    post:
+      tags:
+        - 证书申请管理
+      summary: 申请
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          type: string
+          description: ""
+          default: "{\"siteId\":0,\"mode\":0}"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/certify/get/certify/by/host:
+    get:
+      tags:
+        - 证书申请管理
+      summary: 根据host获取证书
+      produces:
+        - application/json
+      parameters:
+        - name: host
+          in: query
+          type: string
+          description: ""
+          default: "1.com"
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/message/GetMessageList:
+    post:
+      tags:
+        - 消息管理
+      summary: 获取消息列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: ""
+          in: body
+          type: string
+          default:  "{\"page\":1,\"limit\":10,\"user\":\"\",\"title\":\"\"}"
+          required: true
+      responses:
+        '200':
+          description: 返回产品列表
+          schema:
+            $ref: '#/definitions/R'
+  /sys/message/SaveMessage:
+    post:
+      tags:
+        - 消息管理
+      summary: 创建|修改消息
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 消息对象
+          in: body
+          type: string
+          default: "{\"id\":0,\"type\":1,\"sendType\":1,\"sendObj\":\"\",\"title\":\"\",\"content\":\"\",\"status\":1}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/message/delete:
+    post:
+      tags:
+        - 消息管理
+      summary: 删除message
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: message ID 列表
+          in: body
+          type: array
+          items:
+            type: integer
+            format: int64
+            default: 0
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/message/info/{id}:
+    get:
+      tags:
+        - 消息管理
+      summary: 获取MESSAGE详细信息
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/public/nginx/attr/enum:
+    get:
+      tags:
+        - 全局设置
+      summary: 全局属性
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/public/nginx/attr/save:
+    post:
+      tags:
+        - 全局设置
+      summary: 全局属性保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 全局属性保存(c_m_text 类型需要传parentId)
+          in: body
+          type: string
+          default: "{\"worker_processes\":\"auto\",\"worker_cpu_affinity\":\"auto\",web_rule_regx_detail:[{\"id\":2,\"parentId\":1,\"value\":\"xx..xx\"}]}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/public/nginx/attr/list:
+    post:
+      tags:
+        - 全局设置
+      summary: 全局属性保存获取
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 全局属性保存获取(c_m_text 类型需要传parentId)
+          in: body
+          type: string
+          default: "{\"groups\":\"nginx_conf,cache\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/public/nginx/attr/key/detail:
+    post:
+      tags:
+        - 全局设置
+      summary: 单个全局属性获取
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 全局属性保存获取(c_m_text 类型需要传parentId)
+          in: body
+          type: string
+          default: "{\"key\":\"nginx_conf\",\"parentId\":1}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/public/nginx/attr/status/change:
+    post:
+      tags:
+        - 全局设置
+      summary: 全局属性状态修改(m_text c_m_text 类型不能直接修改)
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 全局属性状态修改, 优先取ID,无id 取KEY,id 返回单个，KEY 返回list
+          in: body
+          type: string
+          default: "{\"id\":1,\"status\":1,\"key\":\"error_page\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/public/nginx/attr/weight/change:
+    post:
+      tags:
+        - 全局设置
+      summary: 属性权重修改(m_text mm_text c_m_text 可修改）
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 属性权重修改(m_text mm_text c_m_text 可修改）
+          in: body
+          type: string
+          default: "{\"id\":1,\"opMode\":1}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/public/nginx/attr/delete:
+    post:
+      tags:
+        - 全局设置
+      summary: 全局属性删除
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: 全局属性删除
+          in: body
+          type: string
+          default: "{\"ids\":\"1,3,4\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+
+  /sys/tb/work/order/category/list:
+    get:
+      tags:
+        - 工单管理
+      summary: 查询分类
+      produces:
+        - application/json
+      parameters:
+        - name: parentId
+          description:  父iD
+          in: query
+          type: integer
+          default: 0
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/tb/work/order/category/save:
+    post:
+      tags:
+        - 工单管理
+      summary: 保存分类
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: json
+          in: body
+          type: string
+          default: "{\"id\":1,\"parentId\":0,\"title\":\"\",\"description\":\"\",\"status\":\"\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/tb/work/order/category/delete:
+    get:
+      tags:
+        - 工单管理
+      summary: 删除分类
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: id
+          in: query
+          type: integer
+          default: 0
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/tb/work/order/wol/list:
+    post:
+      tags:
+        - 工单管理
+      summary: 工单列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: json
+          in: body
+          type: string
+          default: "{\"urgentLevel\":1,\"status\":0,\"page\":1,\"limit\":20}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/tb/work/order/wol/detail:
+    get:
+      tags:
+        - 工单管理
+      summary: 工单详情
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: id
+          in: query
+          type: integer
+          default: 1
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/tb/work/order/wol/bat/delete:
+    post:
+      tags:
+        - 工单管理
+      summary: 工单批量删除
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: json
+          in: body
+          type: string
+          default: "{\"ids\":\"1,2\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/tb/work/order/wol/send/message:
+    post:
+      tags:
+        - 工单管理
+      summary: 回复工单
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: json
+          in: body
+          type: string
+          default: "{\"workOrderId\":1,\"content\":\"\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/tb/work/order/wol/new/msg:
+    get:
+      tags:
+        - 工单管理
+      summary: 新消息
+      produces:
+        - application/json
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/rewrite/list:
+    post:
+      tags:
+        - URL转发
+      summary: 列表
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: json
+          in: body
+          type: string
+          default: "{\"user\":\"demo\",\"page\":1,\"limit\":20}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/rewrite/info/{id}:
+    get:
+      tags:
+        - URL转发
+      summary: 获取信息
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          description: 参数ID
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/rewrite/save:
+    post:
+      tags:
+        - URL转发
+      summary: 保存
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: json
+          in: body
+          type: string
+          default: "{\"alias\":\"alias,alias\",\"id\":0,\"remark\":\"remark\",\"scheme\":\"http\",\"rewriteMode\":0,\"serialNumber\":\"1601213213\",\"serverName\":\"serverName\",\"status\":0,\"target\":\"string\",\"userId\":0}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+  /sys/cdn/rewrite/delete:
+    post:
+      tags:
+        - URL转发
+      summary: 删除
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: json
+          in: body
+          type: string
+          default: "{\"ids\":\"1,2,3\"}"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/R'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        #定义数据模型
+definitions:
+  R:
+      type: object
+      properties:
+        code:
+          description: 状态码 0：成功  非0：失败
+          type: integer
+          format: int32
+        msg:
+          description: 失败原因
+          type: string
+  Login:
+      type: object
+      properties:
+        code:
+          description: 状态码 0：成功  非0：失败
+          type: integer
+          format: int32
+        token:
+          description: token
+          type: string
+        expire:
+          description: 过期时长
+          type: integer
+          format: int32
+        msg:
+          description: 失败原因
+          type: string
+  LoginForm:
+    type: object
+    properties:
+      username:
+        description: 用户名
+        default: admin
+        type: string
+      password:
+        description: 密码
+        default: admin
+        type: string
+      captcha:
+        description: 验证码
+        default: "0000"
+        type: string
+      uuid:
+        description: UUID
+        default: "0000"
+        type: string
+  PasswordForm:
+    type: object
+    properties:
+      password:
+        description: 原密码
+        type: string
+      newPassword:
+        description: 新密码
+        type: string
+  SysUserEntity:
+    type: object
+    properties:
+      userId:
+        description: 用户ID
+        type: integer
+        format: int64
+      username:
+        description: 用户名
+        type: string
+      password:
+        description: 密码
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      mobile:
+        description: 手机号
+        type: string
+      status:
+        description: 状态  0：禁用   1：正常
+        type: integer
+        format: int32
+      roleIdList:
+        description: 角色ID列表
+        type: array
+        items:
+          type: integer
+          format: int64
+      createUserId:
+        description: 创建者ID
+        type: integer
+        format: int64
+      createTime:
+        description: 创建时间
+        type: string
+        format: date-time
+  SysUserEntityList:
+    type: object
+    properties:
+      code:
+        description: 状态码 0：成功  非0：失败
+        type: integer
+        format: int32
+      page:
+        type: object
+        properties:
+          totalCount:
+            description: 总记录数
+            type: integer
+            format: int32
+          pageSize:
+            description: 每页记录数
+            type: integer
+            format: int32
+          totalPage:
+            description: 总页数
+            type: integer
+            format: int32
+          currPage:
+            description: 当前页数
+            type: integer
+            format: int32
+          list:
+            type: array
+            items:
+              $ref: '#/definitions/SysUserEntity'
+  SysUserEntityEdit:
+      type: object
+      properties:
+        userId:
+          description: 用户ID
+          type: integer
+          format: int64
+        username:
+          description: 用户名
+          type: string
+        password:
+          description: 密码
+          type: string
+        email:
+          description: 邮箱
+          type: string
+        mobile:
+          description: 手机号
+          type: string
+        status:
+          description: 状态  0：禁用   1：正常
+          type: integer
+          format: int32
+        roleIdList:
+          description: 角色ID列表
+          type: array
+          items:
+            type: integer
+            format: int32
+
+  SysRoleEntity:
+    type: object
+    properties:
+      roleId:
+        description: 角色ID
+        type: integer
+        format: int64
+      roleName:
+        description: 角色名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      menuIdList:
+        description: 菜单ID列表
+        type: array
+        items:
+          type: integer
+          format: int64
+      createUserId:
+        description: 创建者ID
+        type: integer
+        format: int64
+      createTime:
+        description: 创建时间
+        type: string
+        format: date-time
+  SysRoleEntityList:
+    type: object
+    properties:
+      code:
+        description: 状态码 0：成功  非0：失败
+        type: integer
+        format: int32
+      page:
+        type: object
+        properties:
+          totalCount:
+            description: 总记录数
+            type: integer
+            format: int32
+          pageSize:
+            description: 每页记录数
+            type: integer
+            format: int32
+          totalPage:
+            description: 总页数
+            type: integer
+            format: int32
+          currPage:
+            description: 当前页数
+            type: integer
+            format: int32
+          list:
+            type: array
+            items:
+              $ref: '#/definitions/SysRoleEntity'
+  SysRoleEntityEdit:
+    type: object
+    properties:
+      roleId:
+        description: 角色ID
+        type: integer
+        format: int64
+      roleName:
+        description: 角色名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      menuIdList:
+        description: 菜单ID列表
+        type: array
+        items:
+          type: integer
+          format: int64
+
+  SysMenuEntity:
+    type: object
+    properties:
+      menuId:
+        description: 菜单ID
+        type: integer
+        format: int64
+      name:
+        description: 菜单名称
+        type: string
+      parentId:
+        description: 父菜单ID，一级菜单为0
+        type: integer
+        format: int64
+      parentName:
+        description: 父菜单名称
+        type: string
+      url:
+        description: 菜单URL
+        type: string
+      perms:
+        description: 授权标识
+        type: string
+      type:
+        description: 类型     0：目录   1：菜单   2：按钮
+        type: integer
+        format: int32
+      icon:
+        description: 菜单图标
+        type: string
+      orderNum:
+        description: 排序
+        type: integer
+        format: int32
+      open:
+        description: 是否展开   true：展开   false：不展开
+        type: boolean
+        format: int32
+  SysMenuEntityEdit:
+    type: object
+    properties:
+      menuId:
+        description: 菜单ID
+        type: integer
+        format: int64
+      name:
+        description: 菜单名称
+        type: string
+      parentId:
+        description: 父菜单ID，一级菜单为0
+        type: integer
+        format: int64
+      url:
+        description: 菜单URL
+        type: string
+      perms:
+        description: 授权标识
+        type: string
+      type:
+        description: 类型     0：目录   1：菜单   2：按钮
+        type: integer
+        format: int32
+      icon:
+        description: 菜单图标
+        type: string
+      orderNum:
+        description: 排序
+        type: integer
+        format: int32
+
+  SysLogEntity:
+    type: object
+    properties:
+      id:
+        description: 日志ID
+        type: integer
+        format: int64
+      username:
+        description: 用户名
+        type: string
+      operation:
+        description: 用户操作
+        type: string
+      method:
+        description: 请求方法
+        type: string
+      params:
+        description: 请求参数
+        type: string
+      time:
+        description: 执行时长(毫秒)
+        type: integer
+        format: int64
+      ip:
+        description: IP地址
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+        format: date-time
+  SysLogEntityList:
+    type: object
+    properties:
+      code:
+        description: 状态码 0：成功  非0：失败
+        type: integer
+        format: int32
+      page:
+        type: object
+        properties:
+          totalCount:
+            description: 总记录数
+            type: integer
+            format: int32
+          pageSize:
+            description: 每页记录数
+            type: integer
+            format: int32
+          totalPage:
+            description: 总页数
+            type: integer
+            format: int32
+          currPage:
+            description: 当前页数
+            type: integer
+            format: int32
+          list:
+            type: array
+            items:
+              $ref: '#/definitions/SysLogEntity'
+
+  SysConfigEntity:
+    type: object
+    properties:
+      id:
+        description: 参数ID
+        type: integer
+        format: int64
+      paramKey:
+        description: 参数名
+        type: string
+      paramValue:
+        description: 参数值
+        type: string
+      remark:
+        description: 备注
+        type: string
+  SysConfigEntityList:
+    type: object
+    properties:
+      code:
+        description: 状态码 0：成功  非0：失败
+        type: integer
+        format: int32
+      page:
+        type: object
+        properties:
+          totalCount:
+            description: 总记录数
+            type: integer
+            format: int32
+          pageSize:
+            description: 每页记录数
+            type: integer
+            format: int32
+          totalPage:
+            description: 总页数
+            type: integer
+            format: int32
+          currPage:
+            description: 当前页数
+            type: integer
+            format: int32
+          list:
+            type: array
+            items:
+              $ref: '#/definitions/SysConfigEntity'
+
+  SysOssEntity:
+    type: object
+    properties:
+      id:
+        description: ID
+        type: integer
+        format: int64
+      url:
+        description: URL地址
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+        format: date-time
+  SysOssEntityList:
+    type: object
+    properties:
+      code:
+        description: 状态码 0：成功  非0：失败
+        type: integer
+        format: int32
+      page:
+        type: object
+        properties:
+          totalCount:
+            description: 总记录数
+            type: integer
+            format: int32
+          pageSize:
+            description: 每页记录数
+            type: integer
+            format: int32
+          totalPage:
+            description: 总页数
+            type: integer
+            format: int32
+          currPage:
+            description: 当前页数
+            type: integer
+            format: int32
+          list:
+            type: array
+            items:
+              $ref: '#/definitions/SysOssEntity'
+  SysCloudStorageEntity:
+    type: object
+    properties:
+      type:
+        description: 类型 1：七牛  2：阿里云  3：腾讯云
+        type: integer
+        format: int32
+      qiniuDomain:
+        description: 七牛绑定的域名
+        type: string
+      qiniuPrefix:
+        description: 七牛路径前缀
+        type: string
+      qiniuAccessKey:
+        description: 七牛ACCESS_KEY
+        type: string
+      qiniuSecretKey:
+        description: 七牛SECRET_KEY
+        type: string
+      qiniuBucketName:
+        description: 七牛存储空间名
+        type: string
+      aliyunDomain:
+        description: 阿里云绑定的域名
+        type: string
+      aliyunPrefix:
+        description: 阿里云路径前缀
+        type: string
+      aliyunEndPoint:
+        description: 阿里云EndPoint
+        type: string
+      aliyunAccessKeyId:
+        description: 阿里云AccessKeyId
+        type: string
+      aliyunAccessKeySecret:
+        description: 阿里云AccessKeySecret
+        type: string
+      aliyunBucketName:
+        description: 阿里云BucketName
+        type: string
+      qcloudDomain:
+        description: 腾讯云绑定的域名
+        type: string
+      qcloudPrefix:
+        description: 腾讯云路径前缀
+        type: string
+      qcloudAppId:
+        description: 腾讯云AppId
+        type: string
+      qcloudSecretId:
+        description: 腾讯云SecretId
+        type: string
+      qcloudSecretKey:
+        description: 腾讯云SecretKey
+        type: string
+      qcloudBucketName:
+        description: 腾讯云BucketName
+        type: string
+      qcloudRegion:
+        description: 腾讯云COS所属地区
+        type: string
+  FileUpload:
+      type: object
+      properties:
+        code:
+          description: 状态码 0：成功  非0：失败
+          type: integer
+          format: int32
+        url:
+          description: 文件URL地址
+          type: string
+        msg:
+          description: 失败原因
+          type: string
+
+  ScheduleJobEntity:
+    type: object
+    properties:
+      jobId:
+        description: 任务ID
+        type: integer
+        format: int64
+      beanName:
+        description: spring bean名称
+        type: string
+      methodName:
+        description: 方法名
+        type: string
+      params:
+        description: 参数
+        type: string
+      cronExpression:
+        description: cron表达式
+        type: string
+      status:
+        description: 任务状态  0：正常  1：暂停
+        type: integer
+        format: int32
+      remark:
+        description: 备注
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+        format: date-time
+  ScheduleJobEntityList:
+    type: object
+    properties:
+      code:
+        description: 状态码 0：成功  非0：失败
+        type: integer
+        format: int32
+      page:
+        type: object
+        properties:
+          totalCount:
+            description: 总记录数
+            type: integer
+            format: int32
+          pageSize:
+            description: 每页记录数
+            type: integer
+            format: int32
+          totalPage:
+            description: 总页数
+            type: integer
+            format: int32
+          currPage:
+            description: 当前页数
+            type: integer
+            format: int32
+          list:
+            type: array
+            items:
+              $ref: '#/definitions/ScheduleJobEntity'
+
+  ScheduleJobLogEntity:
+    type: object
+    properties:
+      logId:
+        description: 日志id
+        type: integer
+        format: int64
+      jobId:
+        description: 任务id
+        type: integer
+        format: int64
+      beanName:
+        description: spring bean名称
+        type: string
+      methodName:
+        description: 方法名
+        type: string
+      params:
+        description: 参数
+        type: string
+      status:
+        description: 任务状态    0：成功    1：失败
+        type: integer
+        format: int32
+      error:
+        description: 失败信息
+        type: string
+      times:
+        description: 耗时(单位：毫秒)
+        type: integer
+        format: int32
+      createTime:
+        description: 创建时间
+        type: string
+        format: date-time
+  ScheduleJobLogEntityList:
+    type: object
+    properties:
+      code:
+        description: 状态码 0：成功  非0：失败
+        type: integer
+        format: int32
+      page:
+        type: object
+        properties:
+          totalCount:
+            description: 总记录数
+            type: integer
+            format: int32
+          pageSize:
+            description: 每页记录数
+            type: integer
+            format: int32
+          totalPage:
+            description: 总页数
+            type: integer
+            format: int32
+          currPage:
+            description: 当前页数
+            type: integer
+            format: int32
+          list:
+            type: array
+            items:
+              $ref: '#/definitions/ScheduleJobLogEntity'

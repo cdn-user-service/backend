@@ -1,0 +1,63 @@
+<html lang="zh-CN">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全防护系统</title>     
+    <link rel="stylesheet" href="https://www.greywolfcloud.com/assets/cdn/public/gwcdn.5trfdc.css">
+    <style>
+        .code-inputs .captcha_input {
+            width: 200px;
+            background: none;
+            border-bottom: 2px solid #b2b5b6;
+            box-sizing: border-box;
+            color: #b2b5b6;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div class="top top-yan">
+            <div class="top-container">
+                <div class="spinner-icon sprite"></div>
+                <div>
+                    <div class="spinner-info t-c" style="padding: 0;">还需一步</div>
+                    <div class="">
+                        <div class="captcha-code">
+                            <img id="code_img_id"
+                                src=""
+                                >
+                            <span class="change-code"></span>
+                        </div>
+                        <div class="code-inputs">
+                            <input id="captcha_code" type="text" maxlength="4" class="captcha_input"
+                                placeholder="请在此处输入验证码" autocomplete="off">
+                            <button onclick="vf()" type="submit" class="next">进入网站</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hint"></div>
+        <div class="footer">
+            <div class="footer-info"> CC protection by GREYWOLFCLOUD</div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("code_img_id").src = img_src;
+        function vf() {
+            let code = document.getElementById("captcha_code").value;
+            verify_func(code);
+            document.location.reload();
+        }
+    </script>
+
+
+</body>
+
+</html>

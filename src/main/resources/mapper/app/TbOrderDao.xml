@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.ants.modules.app.dao.TbOrderDao">
+
+
+    <select id="getAlreadyPaySum" resultType="map">
+        SELECT SUM(payable) as already_pay from tb_order WHERE status=14 and order_type!=2;
+    </select>
+
+    <select id="getAlreadyRechargeSum" resultType="map">
+        SELECT SUM(payable)  as already_recharge from tb_order WHERE status=14 and order_type=2;
+    </select>
+
+</mapper>

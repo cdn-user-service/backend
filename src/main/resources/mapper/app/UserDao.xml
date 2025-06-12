@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.ants.modules.app.dao.TbUserDao">
+
+    <!-- 查询7天内的注册用户 -->
+    <select id="query7regdata" resultType="io.ants.modules.app.entity.AppUserChartData">
+        SELECT DATE(create_time) as createdate,COUNT(*) as  total   FROM tb_user
+        WHERE DATE_SUB(CURDATE(),INTERVAL 7 DAY) &lt;=  DATE(create_time)
+        GROUP BY createdate;
+    </select>
+
+    <select id="getUserNamesByUserId" parameterType="long" resultType="java.util.Map">
+        SELECT username,mobile,mail FROM tb_user where user_id=#{userId}
+    </select>
+
+
+</mapper>

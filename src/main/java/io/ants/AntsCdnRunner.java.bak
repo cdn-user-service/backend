@@ -1,0 +1,110 @@
+package io.ants;
+
+import io.ants.common.other.QueryAnts;
+import io.ants.common.utils.*;
+import io.ants.modules.sys.dao.TableDao;
+import io.ants.modules.sys.service.*;
+import io.ants.modules.utils.config.ZeroSslConfig;
+import io.ants.modules.utils.factory.ZeroSslFactory;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@Component
+public class AntsCdnRunner implements ApplicationRunner {
+
+    @Autowired
+    private AntsAuthService authService;
+
+    @Autowired
+    private CdnMakeFileService cdnMakeFileService;
+    @Autowired
+    private TbStreamProxyService tbStreamProxyService;
+    @Autowired
+    private TbSiteServer tbSiteServer;
+    @Autowired
+    private CdnSuitService cdnSuitService;
+    @Autowired
+    private TableDao tableDao;
+
+
+    private void setZeroConfAndGetAcmeAccount(){
+        ZeroSslConfig zConf= ZeroSslFactory.build();
+        if (null!=zConf){
+            if (StringUtils.isNotBlank(zConf.getEab_kid()) && StringUtils.isNotBlank(zConf.getEab_hmac_key())){
+                QueryAnts.setZeroSslAccessId(zConf.getEab_kid());
+                QueryAnts.setZeroSslAccessPwd(zConf.getEab_hmac_key());
+            }
+            if (StringUtils.isNotBlank(zConf.getApi_key())){
+                ZeroSslUtils.setAccess_key(zConf.getApi_key());
+            }
+
+        }
+        AcmeShUtils.getAcmeAccount();
+    }
+
+    private void resetMenu(){
+        if (!StaticVariableUtils.demoIp.equals(StaticVariableUtils.authMasterIp)){
+            String pattern = "^INSERT\\s+INTO\\s+sys_menu\\s+\\.*.*;$";
+            Pattern r = Pattern.compile(pattern);
+            List<String> sqlList=new ArrayList<>();
+            for (String sql: JarResourcesFileUtil.getResourceByLine("cdn20_sys_menu.sql")){
+                if (StringUtils.isBlank(sql)){
+                    continue;
+                }
+                //INSERT INTO   sys_menu (menu_id, parent_id, name, url, perms, type, icon, order_num, meta) VALUES (7, 6, '查看', null, 'sys:schedule:list,sys:schedule:info', 2, null, 0, null);
+                //System.out.println(sql);
+                Matcher m = r.matcher(sql);
+                if(m.matches()){
+                    sqlList.add(sql);
+                }
+            }
+            if (sqlList.size()>0){
+                tableDao.clearSysMenuTable();
+                for (String sql:sqlList){
+                    tableDao.update_sql(sql);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void run(ApplicationArguments args) {
+        try{
+
+           //claean QRTZ_SCHEDULER_STATE
+
+
+           authService.getAuthInfo();
+
+           //获取ACME账号
+           setZeroConfAndGetAcmeAccount();
+
+           //重新更新部分数据绑定给字段
+           tbStreamProxyService.reInitDefaultParam();;
+           tbSiteServer.reInitSiteAttr();
+           cdnSuitService.reInitDbColumns();
+
+           //重置菜单
+            resetMenu();
+
+           //开启推送任务线程
+           cdnMakeFileService.operaLinkTaskV2();
+
+           //继续执行申请证书
+           cdnMakeFileService.applyCertThread();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+}

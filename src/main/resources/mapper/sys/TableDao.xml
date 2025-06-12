@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.ants.modules.sys.dao.TableDao">
+
+    <update id="update_sql" parameterType="String"  >
+        ${sqlStr}
+    </update>
+
+    <select id="select_sql" parameterType="String" resultType="java.util.Map">
+        ${sqlStr}
+    </select>
+
+    <select id="selectPublicItemList" parameterType="String" resultType="java.util.LinkedHashMap">
+        ${sqlStr}
+    </select>
+
+
+    <select id="find_row_by_id" parameterType="String" resultType="java.util.Map">
+        SELECT * FROM ${tableName} WHERE id=${id}
+    </select>
+
+</mapper>
