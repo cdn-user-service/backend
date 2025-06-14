@@ -4,7 +4,7 @@ server:
     uri-encoding: UTF-8
     max-threads: 1000
     min-spare-threads: 30
-  port: 18080
+  port: 8081
   connection-timeout: 5000ms
   servlet:
     context-path: /antsxdp
@@ -60,3 +60,15 @@ ants:
     # token有效时长，7天，单位秒
     expire: 604800
     header: token
+
+
+
+service:
+  user-service-url: http://user-service:8080/api
+  cdn-user-service-url: http://cdn-user-service:8080/api
+  cdn-admin-service-url: http://cdn-admin-service:8080/api
+  dns-user-service-url: http://dns-user-service:8080/api
+  dns-admin-service-url: http://dns-admin-service:8080/api
+  monitor-service-url: http://monitor-service:8080/api
+  security-service-url: http://security-service:8080/api
+  notification-service-url: http://notification-service:8080/api 
