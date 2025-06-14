@@ -19,7 +19,9 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:11-jre AS production-stage
 
 # Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends dumb-init && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
 RUN addgroup -g 1001 -S appuser && \
