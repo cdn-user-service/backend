@@ -322,13 +322,6 @@
 			<artifactId>hyperscan</artifactId>
 			<version>5.4.0-2.0.0</version>
 		</dependency>
-
-
-		<!--		<dependency>-->
-		<!--			<groupId>org.hibernate</groupId>-->
-		<!--			<artifactId>hibernate-validator</artifactId>-->
-		<!--			<version>6.2.0.Final</version>-->
-		<!--		</dependency>-->
 		
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
@@ -417,23 +410,6 @@
 				</configuration>
 			</plugin>
 
-<!--			<plugin>-->
-<!--				<groupId>org.apache.maven.plugins</groupId>-->
-<!--				<artifactId>maven-shade-plugin</artifactId>-->
-<!--				<version>3.5.2</version>-->
-<!--				<executions>-->
-<!--					<execution>-->
-<!--						<phase>package</phase>-->
-<!--						<goals>-->
-<!--							<goal>shade</goal>-->
-<!--						</goals>-->
-<!--						<configuration>-->
-<!--							<createDependencyReducedPom>false</createDependencyReducedPom>-->
-<!--						</configuration>-->
-<!--					</execution>-->
-<!--				</executions>-->
-<!--			</plugin>-->
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -449,26 +425,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-<!--			<plugin>-->
-<!--				<groupId>org.codehaus.mojo</groupId>-->
-<!--				<artifactId>wagon-maven-plugin</artifactId>-->
-<!--				<version>1.0</version>-->
-<!--				<configuration>-->
-<!--					<fromFile>target/${pack-name}</fromFile>-->
-<!--					<url><![CDATA[scp://${remote-username}:${remote-passwd}@${remote-addr}${service-path}]]></url>-->
-<!--					<commands>-->
-<!--						&lt;!&ndash; Kill Old Process &ndash;&gt;-->
-<!--						<command>kill -9 `ps -ef |grep ${project.artifactId}.jar|grep -v "grep" |awk '{print $2}'`</command>-->
-<!--						&lt;!&ndash; Restart jar package，write result into renren.log &ndash;&gt;-->
-<!--						<command><![CDATA[nohup java -jar ${service-path}/${pack-name} &#45;&#45;spring.profiles.active=test > ${service-path}/renren.log 2>&1 & ]]></command>-->
-<!--						<command><![CDATA[netstat -nptl]]></command>-->
-<!--						<command><![CDATA[ps -ef | grep java | grep -v grep]]></command>-->
-<!--					</commands>-->
-<!--					&lt;!&ndash; 运行命令 mvn clean package wagon:upload-single wagon:sshexec&ndash;&gt;-->
-<!--					<displayCommandOutputs>true</displayCommandOutputs>-->
-<!--				</configuration>-->
-<!--			</plugin>-->
 
 			<plugin>
 				<groupId>com.spotify</groupId>
