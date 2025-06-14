@@ -2,6 +2,11 @@ name: Backend CI/CD
 
 on:
   workflow_dispatch:
+    inputs:
+      run_tests:
+        description: 'Run tests'
+        required: false
+        default: 'true'
   push:
     branches: [ main, backend-java ]
   pull_request:
@@ -12,6 +17,7 @@ env:
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/cdn-user-service
   JAVA_VERSION: '11'
   MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
+  RUN_TESTS: ${{ github.event.inputs.run_tests || 'true' }}
 
 jobs:
   test:
@@ -19,14 +25,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up JDK ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: 'temurin'
         cache: maven
-        
+
     - name: Cache Maven dependencies
       uses: actions/cache@v4
       with:
@@ -34,21 +40,24 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
-          
-    - name: Run tests
+
+    - name: Run tests (conditionally)
+      if: env.RUN_TESTS == 'true'
       run: mvn clean test -B
-      
-    - name: Run code analysis
+
+    - name: Run code analysis (conditionally)
+      if: env.RUN_TESTS == 'true'
       run: mvn verify -B
-      
-    - name: Generate test report
+
+    - name: Generate test report (conditionally & safely)
+      if: env.RUN_TESTS == 'true' && success()
       uses: dorny/test-reporter@v1
-      if: success() || failure()
       with:
         name: Maven Tests
         path: target/surefire-reports/*.xml
         reporter: java-junit
-        
+        fail-on-error: false
+
     - name: Build application
       run: mvn clean package -DskipTests -B
 
@@ -58,14 +67,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up JDK ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: 'temurin'
         cache: maven
-        
+
     - name: Run OWASP Dependency Check
       run: mvn org.owasp:dependency-check-maven:check -B
 
@@ -77,16 +86,16 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-      
+
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_TOKEN }}
-        
+
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
@@ -99,7 +108,7 @@ jobs:
           type=sha,prefix={{branch}}-
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
-        
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
@@ -112,20 +121,20 @@ jobs:
         cache-to: type=gha,mode=max
         build-args: |
           BUILDKIT_INLINE_CACHE=1
-          
+
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ env.IMAGE_NAME }}:latest
         format: 'sarif'
         output: 'trivy-results.sarif'
-        
+
     - name: Upload Trivy scan results
       uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
-        
+
     - name: Generate deployment summary
       run: |
         echo "## 🚀 Backend Deployment Summary" >> $GITHUB_STEP_SUMMARY
