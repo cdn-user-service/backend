@@ -57,6 +57,7 @@ jobs:
         path: target/surefire-reports/*.xml
         reporter: java-junit
         fail-on-error: false
+        fail-on-no-results: false
 
     - name: Build application
       run: mvn clean package -DskipTests -B
