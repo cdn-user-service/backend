@@ -5,7 +5,7 @@ WORKDIR /app
 # Copy Maven files for better layer caching
 COPY pom.xml .
 COPY .mvn/ .mvn/
-COPY mvnw .
+# COPY mvnw .
 RUN chmod +x mvnw
 
 # Download dependencies (cached layer)
