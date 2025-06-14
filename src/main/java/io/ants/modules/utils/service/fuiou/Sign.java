@@ -1,7 +1,8 @@
 package io.ants.modules.utils.service.fuiou;
 
 import io.ants.modules.utils.config.fuiou.FuiouConfig;
-import org.postgresql.util.Base64;
+// import org.postgresql.util.Base64;
+import java.util.Base64;
 
 import java.io.IOException;
 import java.security.*;
@@ -28,7 +29,7 @@ public class Sign {
             InvalidKeySpecException, InvalidKeyException, SignatureException {
         // 解密由base64编码的私钥
         //byte[] bytesKey = (new BASE64Decoder()).decodeBuffer(privateKey);
-        byte[] bytesKey = Base64.decode(privateKey);
+        byte[] bytesKey = Base64.getDecoder().decode(privateKey);// Base64.decode(privateKey);
 
         // 构造PKCS8EncodedKeySpec对象
         PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(bytesKey);
@@ -41,7 +42,7 @@ public class Sign {
         signature.initSign(priKey);
         signature.update(srcSignPacket.getBytes(FuiouConfig.charset));
         //String sign = (new BASE64Encoder()).encodeBuffer(signature.sign());
-        String sign= Base64.encodeBytes(signature.sign());
+        String sign = Base64.getEncoder().encodeToString(signature.sign());//Base64.encodeBytes(signature.sign());
         return sign;
     }
 
@@ -85,7 +86,7 @@ public class Sign {
      */
     public static String encryptBASE64(byte[] key) throws Exception {
         //return (new BASE64Encoder()).encodeBuffer(key);
-        return  Base64.encodeBytes(key);
+        return  Base64.getEncoder().encodeToString(key);
     }
 
     /**
@@ -97,7 +98,7 @@ public class Sign {
      */
     public static byte[] decryptBASE64(String key) throws Exception {
         //return (new BASE64Decoder()).decodeBuffer(key);
-        return Base64.decode(key);
+        return Base64.getDecoder().decode(key); //Base64.decode(key);
     }
 
 }

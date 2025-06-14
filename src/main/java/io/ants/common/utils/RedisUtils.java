@@ -1,11 +1,3 @@
-/**
- *
- *
- * https://www.cdn.com
- *
- * 版权所有，侵权必究！
- */
-
 package io.ants.common.utils;
 
 import com.google.gson.Gson;
@@ -19,6 +11,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -304,9 +297,11 @@ public class RedisUtils {
     public  Set<String> scanAll(String pattern) {
         return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
             Set<String> keysTmp = new HashSet<>();
-            try ( Cursor<byte[]> cursor = connection.scan(new ScanOptions.ScanOptionsBuilder() .match(pattern) .count(100).build())) {
+            try ( Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions()
+                .match(pattern)
+                .count(100).build())) {
                 while (cursor.hasNext()) {
-                    keysTmp.add(new String(cursor.next(), "Utf-8"));
+                    keysTmp.add(new String(cursor.next(), StandardCharsets.UTF_8));
                 }
                 return  keysTmp;
             } catch (Exception e) {
