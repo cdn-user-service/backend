@@ -23,7 +23,7 @@
 		<mybatisplus.version>3.3.1</mybatisplus.version>
 		<mysql.version>8.0.17</mysql.version>
 		<mssql.version>4.0</mssql.version>
-		<oracle.version>11.2.0.3</oracle.version>
+		<oracle.version>21.1.0.0</oracle.version>
 		<druid.version>1.1.13</druid.version>
 		<quartz.version>2.3.2</quartz.version>
 		<commons.lang.version>2.6</commons.lang.version>
@@ -129,9 +129,9 @@
 		</dependency>
 		 <!--oracle驱动-->
 		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>${oracle.version}</version>
+		    <groupId>com.oracle.database.jdbc</groupId>
+		    <artifactId>ojdbc8</artifactId>
+		    <version>21.1.0.0</version>
 		</dependency>
 		 <!--mssql驱动-->
 		<dependency>
@@ -501,7 +501,7 @@
 		<repository>
 			<id>public</id>
 			<name>aliyun nexus</name>
-			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+			<url>https://maven.aliyun.com/nexus/content/groups/public/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
