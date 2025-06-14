@@ -1,5 +1,5 @@
 # Build stage
-FROM maven:3.9.6-eclipse-temurin-11-alpine AS build-stage
+FROM maven:3.9.6-eclipse-temurin-11 AS build-stage
 WORKDIR /app
 
 # Copy Maven files for better layer caching
@@ -16,7 +16,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B
 
 # Production stage
-FROM eclipse-temurin:11-jre-alpine AS production-stage
+FROM eclipse-temurin:11-jre AS production-stage
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
