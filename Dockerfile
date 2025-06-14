@@ -24,8 +24,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN addgroup -g 1001 -S appuser && \
-    adduser -S appuser -u 1001 -G appuser
+RUN groupadd --gid 1001 appuser && \
+    useradd --uid 1001 --gid appuser --shell /bin/bash appuser
 
 WORKDIR /app
 
