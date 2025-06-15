@@ -18,14 +18,11 @@ RUN mvn clean package -DskipTests -B
 # Production stage
 FROM eclipse-temurin:11-jre AS production-stage
 
-# Install dumb-init for proper signal handling
 RUN apt-get update && \
     apt-get install -y --no-install-recommends dumb-init && \
+    groupadd --gid 1001 appuser && \
+    useradd --uid 1001 --gid appuser --shell /bin/bash appuser && \
     rm -rf /var/lib/apt/lists/*
-
-# Create non-root user
-RUN groupadd --gid 1001 appuser && \
-    useradd --uid 1001 --gid appuser --shell /bin/bash appuser
 
 WORKDIR /app
 
