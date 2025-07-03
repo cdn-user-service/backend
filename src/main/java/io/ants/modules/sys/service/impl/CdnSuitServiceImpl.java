@@ -1375,8 +1375,9 @@ public class CdnSuitServiceImpl implements CdnSuitService {
         } else if (S_MODE_TIME_OUT.equals(mode)) {
             // 3已过期
             ipage = suitDao.selectPage(
-                    new Page<CdnSuitEntity>(form.getPage(), form.getLimit()),
+                    new Page<>(form.getPage(), form.getLimit()),
                     new QueryWrapper<CdnSuitEntity>()
+                            .select("MAX(id) AS id", "serial_number") // 🔧 聚合字段
                             .orderByDesc("id")
                             .in("suit_type", productTypeList.toArray())
                             .in(StringUtils.isNotBlank(form.getUserIds()), "user_id", form.getUserIds().split(","))
