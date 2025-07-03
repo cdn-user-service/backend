@@ -1,12 +1,12 @@
 package io.ants.modules.app.form;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
-@ApiModel(value = "消息")
+@Schema(name = "消息")
 public class MessageForm {
 
     private Integer id;
@@ -15,7 +15,7 @@ public class MessageForm {
      * 1=站内消息;2=公告消息
      */
     @NotNull
-    private  Integer type;
+    private Integer type;
 
     /**
      * 0=指定userIds发送；1=指定et用户组发【暂无】；2=指定所有 用户

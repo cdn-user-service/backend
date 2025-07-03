@@ -2,12 +2,10 @@ package io.ants.modules.app.form;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
-
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class BatchSearchModifySiteAttrForm {
-
 
     /**
      * 站点IDS【,分割】，传all为所有站
@@ -28,9 +26,8 @@ public class BatchSearchModifySiteAttrForm {
      */
     private String t_value;
 
-
     /**
      * 值为1是不修改，只返回搜索到的结果数
      */
-    private int test=0;
+    private int test = 0;
 }

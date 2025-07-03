@@ -2,22 +2,21 @@ package io.ants.modules.utils.config.aliyun;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
 @Data
 public class AliyunSmsConfig implements Serializable {
 
-
     @Data
-    public class SmsTempVo{
+    public class SmsTempVo {
         // {"name":"flow_out","title":"","id":"1276490","status":1},
         private String name;
         private String title;
         private String id;
         private String temp;
-        private Integer status=0;
+        private Integer status = 0;
     }
 
     private static final long serialVersionUID = 1L;
@@ -33,12 +32,12 @@ public class AliyunSmsConfig implements Serializable {
 
     private List<SmsTempVo> templateIds;
 
-    public void updateTempTips(){
-        if (null==this.templateIds || templateIds.isEmpty() ){
+    public void updateTempTips() {
+        if (null == this.templateIds || templateIds.isEmpty()) {
             return;
         }
-        templateIds.forEach(item->{
-            switch (item.getName()){
+        templateIds.forEach(item -> {
+            switch (item.getName()) {
                 case "code":
                     item.setTemp("您的验证码是：${code}，如非本人操作，请忽略本短信！");
                     break;

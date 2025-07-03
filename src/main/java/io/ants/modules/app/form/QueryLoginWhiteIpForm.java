@@ -2,7 +2,7 @@ package io.ants.modules.app.form;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class QueryLoginWhiteIpForm {
@@ -10,8 +10,8 @@ public class QueryLoginWhiteIpForm {
     private String ip;
 
     @NotNull
-    private Integer page=1;
+    private Integer page = 1;
 
     @NotNull
-    private Integer limit=20;
+    private Integer limit = 20;
 }

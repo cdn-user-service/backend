@@ -2,7 +2,7 @@ package io.ants.modules.sys.vo;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class NgxRefererCheckVo {
@@ -14,5 +14,5 @@ public class NgxRefererCheckVo {
 
     private String content;
 
-    private Integer maxAge=0;
+    private Integer maxAge = 0;
 }

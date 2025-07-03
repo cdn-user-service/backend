@@ -56,7 +56,7 @@ public  class TbWorkOrderServiceImpl implements TbWorkOrderService {
             final_list.addAll(list);
         }
         final_list.forEach(item->{
-            Integer count=tbWorkOrderCategoryDao.selectCount(new QueryWrapper<TbWorkOrderCategoryEntity>().eq("parent_id",item.getId()));
+            Long count=tbWorkOrderCategoryDao.selectCount(new QueryWrapper<TbWorkOrderCategoryEntity>().eq("parent_id",item.getId()));
             item.setChildCount(count);
         });
         return final_list;

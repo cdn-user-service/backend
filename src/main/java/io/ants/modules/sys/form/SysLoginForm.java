@@ -8,7 +8,6 @@
 
 package io.ants.modules.sys.form;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -23,6 +22,5 @@ public class SysLoginForm {
     private String captcha;
     private String uuid;
     private String googleAuthCode;
-
 
 }

@@ -6,7 +6,7 @@ import io.ants.common.utils.R;
 import io.ants.common.validator.ValidatorUtils;
 import io.ants.modules.sys.form.AdminRechargeForm;
 import io.ants.modules.sys.service.PayService;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +25,7 @@ public class PayController extends AbstractController {
 
     @SysLog("管理员人工充值")
     @PostMapping("/adminRecharge")
-    @RequiresPermissions("generator:order:admin_recharge")
+    @PreAuthorize("hasAuthority('generator:order:admin_recharge')")
     public R adminRecharge(@RequestBody Map<String, Object> params){
         AdminRechargeForm form= DataTypeConversionUtil.map2entity(params, AdminRechargeForm.class);
         ValidatorUtils.validateEntity(form);

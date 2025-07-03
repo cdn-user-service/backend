@@ -12,14 +12,11 @@ import lombok.Data;
 public class CdnClientAreaEntity {
     private Integer id;
 
-
     private String name;
-
 
     private String remark;
 
     @TableField(exist = false)
-    private Integer nodeNum;
-
+    private Long nodeNum;
 
 }

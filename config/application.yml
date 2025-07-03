@@ -28,7 +28,7 @@ spring:
 
 
 #mybatis
-mybatis-plus:
+mybatis-plus:  
   mapper-locations: classpath*:/mapper/**/*.xml
   #实体扫描，多个package用逗号或者分号分隔
   typeAliasesPackage: io.ants.modules.*.entity
@@ -46,13 +46,15 @@ mybatis-plus:
     cache-enabled: false
     call-setters-on-nulls: true
     jdbc-type-for-null: 'null'
+    # 别打印日志了救命
+    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 
 ants:
-  redis:
-    open: false
-  shiro:
-    redis: false
+  # redis:
+  #   open: false
+  # shiro:
+  #   redis: false
   # APP模块，是通过jwt认证的，如果要使用APP模块，则需要修改【加密秘钥】
   jwt:
     # 加密秘钥
@@ -61,14 +63,7 @@ ants:
     expire: 604800
     header: token
 
-
-
-service:
-  user-service-url: http://user-service:8080/api
-  cdn-user-service-url: http://cdn-user-service:8080/api
-  cdn-admin-service-url: http://cdn-admin-service:8080/api
-  dns-user-service-url: http://dns-user-service:8080/api
-  dns-admin-service-url: http://dns-admin-service:8080/api
-  monitor-service-url: http://monitor-service:8080/api
-  security-service-url: http://security-service:8080/api
-  notification-service-url: http://notification-service:8080/api 
+logging:
+  level:
+    org.apache.ibatis: warn
+    org.mybatis: warn

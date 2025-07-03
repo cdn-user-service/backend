@@ -8,7 +8,6 @@
 
 package io.ants.modules.app.service;
 
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.ants.common.utils.PageUtils;
 import io.ants.common.utils.R;
@@ -16,7 +15,7 @@ import io.ants.modules.app.entity.TbUserEntity;
 import io.ants.modules.app.form.*;
 import io.ants.modules.sys.form.SaveTbUserInfoFrom;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 /**
@@ -26,15 +25,13 @@ import java.util.Map;
  */
 public interface TbUserService extends IService<TbUserEntity> {
 
-
-
 	/**
 	 * 用户登录
-	 * @param form    登录表单
-	 * @return        返回用户ID
+	 * 
+	 * @param form 登录表单
+	 * @return 返回用户ID
 	 */
 	long login(LoginForm form);
-
 
 	String key2userIds(String key);
 
@@ -42,19 +39,16 @@ public interface TbUserService extends IService<TbUserEntity> {
 
 	PageUtils userList(Integer page, Integer limit, String user);
 
-
 	TbUserEntity userDetail(Long userId);
-
 
 	void delete(String ids);
 
 	TbUserEntity saveUserByUserForm(SaveTbUserInfoFrom userForm);
 
-	TbUserEntity modifyUserBaseInfo(Long userId, String username, String mobile, String mail, String password,Integer status);
-
+	TbUserEntity modifyUserBaseInfo(Long userId, String username, String mobile, String mail, String password,
+			Integer status);
 
 	TbUserEntity createUser(String username, String mobile, String mail, String password);
-
 
 	TbUserEntity queryByMobile(String mobile);
 
@@ -67,19 +61,15 @@ public interface TbUserService extends IService<TbUserEntity> {
 	 *
 	 * @param username
 	 * @param password
-	 * @return        返回用户ID
+	 * @return 返回用户ID
 	 */
-	long loginByUsername(String username,String password);
+	long loginByUsername(String username, String password);
 
+	long loginByMail(String mail, String password);
 
-	long loginByMail(String mail,String password );
-
-
-	long loginByMobil(String mobile,String password);
-
+	long loginByMobil(String mobile, String password);
 
 	R loginByGoogleAuthCode(LoginByGoogleAuthForm form);
-
 
 	R userLogin(LoginForm form);
 
@@ -117,7 +107,7 @@ public interface TbUserService extends IService<TbUserEntity> {
 
 	R wechatLoginCallbackV2(String code, String state);
 
-	R nullPasswordSetPassword(Long userId,String pwd);
+	R nullPasswordSetPassword(Long userId, String pwd);
 
 	R nullPropertyPayPasswordSetPassword(Long userId, String pwd);
 
@@ -133,5 +123,5 @@ public interface TbUserService extends IService<TbUserEntity> {
 
 	R wechatRegisterAndLogin(String nickname, String openid);
 
-    R updateUserModules(TbUserEntity user, UpdateAppUserForm form);
+	R updateUserModules(TbUserEntity user, UpdateAppUserForm form);
 }

@@ -1,110 +1,127 @@
-/**
- * 
- *
- * https://www.cdn.com
- *
- * 版权所有，侵权必究！
- */
-
 package io.ants.modules.sys.oauth2;
 
 import com.google.gson.Gson;
 import io.ants.common.utils.HttpContextUtils;
 import io.ants.common.utils.R;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.AuthenticationException;
+import java.util.List;
 
-/**
- * oauth2过滤器
- *
- * @author Mark sunlightcs@gmail.com
- */
-public class OAuth2Filter extends AuthenticatingFilter {
+public class OAuth2Filter extends OncePerRequestFilter {
 
-    @Override
-    protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
-        //获取请求token
-        String token = getRequestToken((HttpServletRequest) request);
+    private AuthenticationManager authenticationManager;
 
-        if(StringUtils.isBlank(token)){
-            return null;
-        }
+    private static final List<String> WHITE_LIST = List.of(
+            "/swagger-ui.html",
+            "/admin/**",
+            "/users/**",
+            "/ws_ssh/**",
+            "/webjars/**",
+            "/druid/**",
+            "/antsxdp/app/**",
+            "/app/**",
+            "/app/account/kaptcha.jpg",
+            "/app/account/login",
+            "/app/account/regist",
+            "/sys-user/check",
+            "/sys/login",
+            "/sys/appkey/login",
+            "/sys/google-auth/login",
+            "/swagger/**",
+            "/v2/api-docs",
+            "/swagger-resources/**",
+            "/captcha.jpg",
+            "/sys/cdnsys/auth/node/addByNodeRequest",
+            "/sys/cdnsys/auth/nginx/conf/feedbacks",
+            "/sys/cdnsys/auth/nginx/nft/intercept/all",
+            "/sys/cdnsys/auth/runTask",
+            "/app/product/product/attr/object",
+            "/sys/certify/zero/api/create/cert",
+            "/sys/cdnsys/auth/check/import",
+            "/sys/oss/upload",
+            "/sys/oss/get/image/*", // 保持原版的单级匹配
+            "/aaa.txt",
+            "/sys/common/**");
+    private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-        return new OAuth2Token(token);
+    public OAuth2Filter(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 
     @Override
-    protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
-        if(((HttpServletRequest) request).getMethod().equals(RequestMethod.OPTIONS.name())){
-            return true;
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+        for (String whitePath : WHITE_LIST) {
+            if (pathMatcher.match(whitePath, path)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
+        // OPTIONS请求直接放行
+        if (RequestMethod.OPTIONS.name().equals(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        return false;
-    }
+        // 获取token
+        String token = getRequestToken(request);
 
-    @Override
-    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-        //获取请求token，如果token不存在，直接返回401
-        String token = getRequestToken((HttpServletRequest) request);
-        if(StringUtils.isBlank(token)){
-            HttpServletResponse httpResponse = (HttpServletResponse) response;
-            httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
-            httpResponse.setHeader("Access-Control-Allow-Origin", HttpContextUtils.getOrigin());
+        // token为空时的处理
+        if (StringUtils.isBlank(token)) {
+            response.setContentType("application/json;charset=utf-8");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Access-Control-Allow-Origin", HttpContextUtils.getOrigin());
 
-            String json = new Gson().toJson(R.error(HttpStatus.SC_UNAUTHORIZED, "invalid token"));
-
-            httpResponse.getWriter().print(json);
-
-            return false;
+            String json = new Gson().toJson(R.error(HttpServletResponse.SC_UNAUTHORIZED, "invalid token"));
+            response.getWriter().print(json);
+            return; // 阻止继续处理
         }
 
-        return executeLogin(request, response);
-    }
-
-    @Override
-    protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-        httpResponse.setContentType("application/json;charset=utf-8");
-        httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
-        httpResponse.setHeader("Access-Control-Allow-Origin", HttpContextUtils.getOrigin());
         try {
-            //处理登录失败的异常
+            // 尝试认证
+            Authentication auth = authenticationManager.authenticate(new OAuth2Token(token));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            filterChain.doFilter(request, response);
+
+        } catch (AuthenticationException e) {
+
+            response.setContentType("application/json;charset=utf-8");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Access-Control-Allow-Origin", HttpContextUtils.getOrigin());
+
+            // 处理登录失败的异常
             Throwable throwable = e.getCause() == null ? e : e.getCause();
-            R r = R.error(HttpStatus.SC_UNAUTHORIZED, throwable.getMessage());
-
+            R r = R.error(HttpServletResponse.SC_UNAUTHORIZED, throwable.getMessage());
             String json = new Gson().toJson(r);
-            httpResponse.getWriter().print(json);
-        } catch (IOException e1) {
-            e1.printStackTrace();
+            response.getWriter().print(json);
         }
-
-        return false;
     }
 
     /**
      * 获取请求的token
      */
-    private String getRequestToken(HttpServletRequest httpRequest){
-        //从header中获取token
+    private String getRequestToken(HttpServletRequest httpRequest) {
+        // 从header中获取token
         String token = httpRequest.getHeader("token");
 
-        //如果header中不存在token，则从参数中获取token
-        if(StringUtils.isBlank(token)){
+        // 如果header中不存在token，则从参数中获取token
+        if (StringUtils.isBlank(token)) {
             token = httpRequest.getParameter("token");
         }
 
         return token;
     }
-
-
 }

@@ -27,14 +27,16 @@ import io.ants.modules.sys.service.SysUserRoleService;
 import io.ants.modules.sys.service.SysUserService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.shiro.crypto.hash.Sha256Hash;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 /**
  * 系统用户
@@ -47,26 +49,29 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	private SysUserRoleService sysUserRoleService;
 	@Autowired
 	private SysRoleService sysRoleService;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public PageUtils queryPage(Map<String, Object> params) {
-		String username = (String)params.get("username");
-		Long createUserId = (Long)params.get("createUserId");
+		String username = (String) params.get("username");
+		Long createUserId = (Long) params.get("createUserId");
 
 		IPage<SysUserEntity> page = this.page(
-			new Query<SysUserEntity>().getPage(params),
-			new QueryWrapper<SysUserEntity>()
-				.like(StringUtils.isNotBlank(username),"username", username)
-				.eq(createUserId != null,"create_user_id", createUserId)
-		);
+				new Query<SysUserEntity>().getPage(params),
+				new QueryWrapper<SysUserEntity>()
+						.like(StringUtils.isNotBlank(username), "username", username)
+						.eq(createUserId != null, "create_user_id", createUserId));
 
-		page.getRecords().forEach(item->{
-			List<SysUserRoleEntity>rlist =sysUserRoleService.list(new QueryWrapper<SysUserRoleEntity>().eq("user_id",item.getUserId()));
-			List<Long> roleidlist=rlist.stream().map(t->t.getRoleId()).collect(Collectors.toList());
+		page.getRecords().forEach(item -> {
+			List<SysUserRoleEntity> rlist = sysUserRoleService
+					.list(new QueryWrapper<SysUserRoleEntity>().eq("user_id", item.getUserId()));
+			List<Long> roleidlist = rlist.stream().map(t -> t.getRoleId()).collect(Collectors.toList());
 			item.setRoleIdList(roleidlist);
-			List<Map<String,Object>> rolenamelist=new ArrayList<>();
-			roleidlist.forEach(roleid->{
-				Map<String,Object> sysRoleMap=sysRoleService.getMap(new QueryWrapper<SysRoleEntity>().eq("role_id",roleid));
+			List<Map<String, Object>> rolenamelist = new ArrayList<>();
+			roleidlist.forEach(roleid -> {
+				Map<String, Object> sysRoleMap = sysRoleService
+						.getMap(new QueryWrapper<SysRoleEntity>().eq("role_id", roleid));
 				rolenamelist.add(sysRoleMap);
 			});
 			item.setRoleNameList(rolenamelist);
@@ -94,16 +99,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	@Transactional
 	public void saveUser(SysUserEntity user) {
 		user.setCreateTime(new Date());
-		//sha256加密
-		String salt = RandomStringUtils.randomAlphanumeric(20);
-		user.setPassword(new Sha256Hash(user.getPassword(), salt).toHex());
-		user.setSalt(salt);
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		String encodedPassword = passwordEncoder.encode(user.getPassword());
+		user.setPassword(encodedPassword);
 		this.save(user);
-		
-		//检查角色是否越权
+
+		// 检查角色是否越权
 		checkRole(user);
-		
-		//保存用户与角色关系
+
+		// 保存用户与角色关系
 		sysUserRoleService.saveOrUpdate(user.getUserId(), user.getRoleIdList());
 	}
 
@@ -111,17 +115,17 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	@Override
 	@Transactional
 	public void update(SysUserEntity user) {
-		if(StringUtils.isBlank(user.getPassword())){
+		if (StringUtils.isBlank(user.getPassword())) {
 			user.setPassword(null);
-		}else{
-			user.setPassword(new Sha256Hash(user.getPassword(), user.getSalt()).toHex());
+		} else {
+			user.setPassword(passwordEncoder.encode(user.getPassword()));
 		}
 		this.updateById(user);
-		
-		//检查角色是否越权
+
+		// 检查角色是否越权
 		checkRole(user);
-		
-		//保存用户与角色关系
+
+		// 保存用户与角色关系
 		sysUserRoleService.saveOrUpdate(user.getUserId(), user.getRoleIdList());
 	}
 
@@ -132,109 +136,117 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 
 	@Override
 	public boolean updatePassword(Long userId, String password, String newPassword) {
-		SysUserEntity userEntity = new SysUserEntity();
-		userEntity.setPassword(newPassword);
-		return this.update(userEntity,new QueryWrapper<SysUserEntity>().eq("user_id", userId).eq("password", password));
+		SysUserEntity user = this.getById(userId);
+		if (user == null) {
+			return false;
+		}
+
+		if (!passwordEncoder.matches(password, user.getPassword())) {
+			return false;
+		}
+
+		user.setPassword(passwordEncoder.encode(newPassword));
+		return this.updateById(user);
 	}
 
-    @Override
-    public R loginByGoogleAuthCodeGetUid(LoginByGoogleAuthForm form) {
+	@Override
+	public R loginByGoogleAuthCodeGetUid(LoginByGoogleAuthForm form) {
 		ValidatorUtils.validateEntity(form);
 		SysUserEntity user = this.getOne(new QueryWrapper<SysUserEntity>()
-				.and(q->q.eq("username", form.getUser()).or().eq("mobile", form.getUser()).or().eq("email", form.getUser()))
+				.and(q -> q.eq("username", form.getUser()).or().eq("mobile", form.getUser()).or().eq("email",
+						form.getUser()))
 				.isNotNull("google_auth_secret_key")
-				.eq("google_auth_status",1)
+				.eq("google_auth_status", 1)
 				.select("user_id,google_auth_secret_key")
 				.last("limit 1"));
-		if (null==user) {
+		if (null == user) {
 			return R.error("失败001，未绑定或未注册或未开启");
 		}
-		if (!GoogleAuthUtils.checkCode(user.getGoogleAuthSecretKey(), Long.parseLong(form.getCode()), System.currentTimeMillis())){
+		if (!GoogleAuthUtils.checkCode(user.getGoogleAuthSecretKey(), Long.parseLong(form.getCode()),
+				System.currentTimeMillis())) {
 			return R.error("失败002，错误的验证码");
 		}
-		return R.ok().put("data",user.getUserId());
-		//return R.ok(this.generateAppUserToken(user.getUserId(),false,"","googleAuth"));
-    }
+		return R.ok().put("data", user.getUserId());
+		// return
+		// R.ok(this.generateAppUserToken(user.getUserId(),false,"","googleAuth"));
+	}
 
 	@Override
 	public R bindByGoogleAuth(long sysUserId, GoogleAuthBindForm form) {
 		ValidatorUtils.validateEntity(form);
-		SysUserEntity user=this.getById(sysUserId);
-		if(null==user){
+		SysUserEntity user = this.getById(sysUserId);
+		if (null == user) {
 			return R.error("用户不存在");
 		}
-		if (StringUtils.isNotBlank(user.getGoogleAuthSecretKey())){
+		if (StringUtils.isNotBlank(user.getGoogleAuthSecretKey())) {
 			return R.error("绑定失败，已绑定");
 		}
-		if (!GoogleAuthUtils.checkCode(form.getSecretKey(),form.getCode())){
+		if (!GoogleAuthUtils.checkCode(form.getSecretKey(), form.getCode())) {
 			return R.error("绑定失败，CODE错误");
 		}
-		this.update(null,new UpdateWrapper<SysUserEntity>()
-				.eq("user_id",sysUserId)
-				.set("google_auth_secret_key",form.getSecretKey())
-				.set("google_auth_status",1)
-		);
+		this.update(null, new UpdateWrapper<SysUserEntity>()
+				.eq("user_id", sysUserId)
+				.set("google_auth_secret_key", form.getSecretKey())
+				.set("google_auth_status", 1));
 		return R.ok();
 	}
 
 	@Override
 	public R statusWithGoogleAuthSave(long sysUserId, int status) {
-		SysUserEntity user=this.getById(sysUserId);
-		if(null==user){
+		SysUserEntity user = this.getById(sysUserId);
+		if (null == user) {
 			return R.error("用户不存在");
 		}
-		if (StringUtils.isBlank(user.getGoogleAuthSecretKey())){
+		if (StringUtils.isBlank(user.getGoogleAuthSecretKey())) {
 			return R.error("未绑定");
 		}
-		this.update(null,new UpdateWrapper<SysUserEntity>()
-				.eq("user_id",sysUserId)
-				.set("google_auth_status",status)
-		);
+		this.update(null, new UpdateWrapper<SysUserEntity>()
+				.eq("user_id", sysUserId)
+				.set("google_auth_status", status));
 		return R.ok();
 	}
 
-    @Override
-    public R updateSysUserModules(long sysUserId, UpdateSysUserModuleForm form) {
-        this.update(null,new UpdateWrapper<SysUserEntity>()
-				.eq("user_id",sysUserId)
-				.set("white_ip_status",form.getWhiteIpStatus())
-		);
+	@Override
+	public R updateSysUserModules(long sysUserId, UpdateSysUserModuleForm form) {
+		this.update(null, new UpdateWrapper<SysUserEntity>()
+				.eq("user_id", sysUserId)
+				.set("white_ip_status", form.getWhiteIpStatus()));
 		return R.ok();
-    }
+	}
 
-    @Override
-    public R checkSysUserInfo(String userName) {
-		Map<String,Object> retMap=new HashMap<String,Object>();
+	@Override
+	public R checkSysUserInfo(String userName) {
+		Map<String, Object> retMap = new HashMap<String, Object>();
 		SysUserEntity user = this.getOne(new QueryWrapper<SysUserEntity>()
-				.and(q->q.eq("username", userName).or().eq("mobile", userName).or().eq("email",userName))
+				.and(q -> q.eq("username", userName).or().eq("mobile", userName).or().eq("email", userName))
 				.isNotNull("google_auth_secret_key")
-				.eq("google_auth_status",1)
+				.eq("google_auth_status", 1)
 				.select("user_id,google_auth_secret_key")
 				.last("limit 1"));
-		retMap.put("google_auth_status",0);
-		if (null!=user) {
-			retMap.put("google_auth_status",1);
+		retMap.put("google_auth_status", 0);
+		if (null != user) {
+			retMap.put("google_auth_status", 1);
 		}
 		return R.ok(retMap);
-    }
+	}
 
-    /**
+	/**
 	 * 检查角色是否越权
 	 */
-	private void checkRole(SysUserEntity user){
-		if(user.getRoleIdList() == null || user.getRoleIdList().size() == 0){
+	private void checkRole(SysUserEntity user) {
+		if (user.getRoleIdList() == null || user.getRoleIdList().size() == 0) {
 			return;
 		}
-		//如果不是超级管理员,则需要判断用户的角色是否自己创建
-		if(user.getCreateUserId() == Constant.SUPER_ADMIN){
-			return ;
+		// 如果不是超级管理员,则需要判断用户的角色是否自己创建
+		if (user.getCreateUserId() == Constant.SUPER_ADMIN) {
+			return;
 		}
-		
-		//查询用户创建的角色列表
+
+		// 查询用户创建的角色列表
 		List<Long> roleIdList = sysRoleService.queryRoleIdList(user.getCreateUserId());
 
-		//判断是否越权
-		if(!roleIdList.containsAll(user.getRoleIdList())){
+		// 判断是否越权
+		if (!roleIdList.containsAll(user.getRoleIdList())) {
 			throw new RRException("新增用户所选角色,不是本人创建");
 		}
 	}

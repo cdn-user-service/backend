@@ -9,7 +9,7 @@ import io.ants.modules.sys.form.SaveTbUserInfoFrom;
 import io.ants.modules.app.service.TbUserService;
 import io.ants.modules.app.utils.JwtUtils;
 import io.ants.modules.sys.service.SysConfigService;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +30,7 @@ public class TbUserController extends AbstractController{
 
 
     @PostMapping("/list")
-    @RequiresPermissions("app:user:list")
+    @PreAuthorize("hasAuthority('app:user:list')")
     public R list(@RequestBody Map<String, Object> params){
         int page=1;
         int limit=10;
@@ -48,7 +48,7 @@ public class TbUserController extends AbstractController{
     }
 
     @GetMapping("/detail")
-    @RequiresPermissions("app:user:info")
+    @PreAuthorize("hasAuthority('app:user:info')")
     public R detail(@RequestParam String userId){
         Long user_id=Long.parseLong(userId);
         return R.ok().put("data",userService.userDetail(user_id));
@@ -56,7 +56,7 @@ public class TbUserController extends AbstractController{
 
     @SysLog("删除用户")
     @PostMapping("/deleta")
-    @RequiresPermissions("app:user:delete")
+    @PreAuthorize("hasAuthority('app:user:delete')")
     public R delete(@RequestBody Map<String, Object> params){
         checkDemoModify();
         if(params.containsKey("ids")){
@@ -67,11 +67,9 @@ public class TbUserController extends AbstractController{
     }
 
 
-
-
     @SysLog("修改用户信息")
     @PostMapping("/modify")
-    @RequiresPermissions("app:user:update")
+    @PreAuthorize("hasAuthority('app:user:update')")
     public R modify(@RequestBody Map<String, Object> params){
         checkDemoModify();
         SaveTbUserInfoFrom userForm= DataTypeConversionUtil.map2entity(params, SaveTbUserInfoFrom.class);
@@ -82,7 +80,7 @@ public class TbUserController extends AbstractController{
 
     @SysLog("创建用户")
     @PostMapping("/create")
-    @RequiresPermissions("app:user:save")
+    @PreAuthorize("hasAuthority('app:user:save')")
     public R create(@RequestBody Map<String, Object> params){
         SaveTbUserInfoFrom userForm= DataTypeConversionUtil.map2entity(params, SaveTbUserInfoFrom.class);
         TbUserEntity user=userService.saveUserByUserForm(userForm);

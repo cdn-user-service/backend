@@ -1,38 +1,36 @@
 package io.ants.modules.app.form;
 
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Data
-@ApiModel("分布查询Page")
+@Schema(name = "分布查询Page")
 public class PageForm {
-    @ApiModelProperty(value = "搜索条件KEY1",example = "")
+    @Schema(description = "搜索条件KEY1", example = "")
     String search_key1;
 
-    @ApiModelProperty(value = "搜索条件KEY2",example = "")
+    @Schema(description = "搜索条件KEY2", example = "")
     String search_key2;
 
-    @ApiModelProperty(value = "搜索条件KEY3",example = "")
+    @Schema(description = "搜索条件KEY3", example = "")
     String search_key3;
 
-    @ApiModelProperty(value = "review")
+    @Schema(description = "review")
     Integer review;
 
-    @ApiModelProperty(value = "domain_id",example = "1")
-    @NotBlank(message="domain_id 不能为空")
+    @Schema(description = "domain_id", example = "1")
+    @NotBlank(message = "domain_id 不能为空")
     String domain_id;
 
-    @ApiModelProperty(value = "查询页",example = "1")
-    @NotNull(message="查询页 不能为空")
+    @Schema(description = "查询页", example = "1")
+    @NotNull(message = "查询页 不能为空")
     Integer pagenum;
 
-    @ApiModelProperty(value = "每页数量",example = "10")
-    @NotNull(message="每页数量 不能为空")
+    @Schema(description = "每页数量", example = "10")
+    @NotNull(message = "每页数量 不能为空")
     Integer pagesize;
 
 }

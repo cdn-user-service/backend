@@ -2,17 +2,17 @@ package io.ants.modules.sys.form;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
 public class QueryLogForm {
 
     @NotNull
-    private Integer page=1;
+    private Integer page = 1;
 
     @NotNull
-    private Integer  limit=20;
+    private Integer limit = 20;
 
     private String key;
 
@@ -26,9 +26,9 @@ public class QueryLogForm {
 
     private String user;
 
-    private Integer logType=1;
+    private Integer logType = 1;
 
-    private Integer userType=1;
+    private Integer userType = 1;
 
     private String ip;
 

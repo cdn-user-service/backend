@@ -20,10 +20,10 @@ public class CdnIpControlEntity {
 
     private Long ipEnd;
 
-    // 0:自定义  1:云端
+    // 0:自定义 1:云端
     private int ipSource;
 
-    //-1  1:ip 白名单  4:ip 黑名单
+    // -1 1:ip 白名单 4:ip 黑名单
     private Integer control;
 
     private String remark;
@@ -36,14 +36,12 @@ public class CdnIpControlEntity {
     private Object area;
 
     @TableField(exist = false)
-    private Integer childCount;
+    private Long childCount;
 
     @TableField(exist = false)
     private Object child;
 
     @TableField(exist = false)
     private String ips;
-
-
 
 }

@@ -1,44 +1,41 @@
 package io.ants.modules.utils.config;
 
-
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
 @Data
 public class SmsBaoConfig implements Serializable {
 
-
     @Data
-    public class SmsTempVo{
+    public class SmsTempVo {
         //// {"name":"flow_out","title":"","id":"1276490","status":1},
         private String name;
         private String temp;
         private String content;
         private String id;
-        private Integer status=0;
+        private Integer status = 0;
     }
 
     @NotNull(message = "接口地址不能为空！")
-    private String api_addr="";
+    private String api_addr = "";
 
     @NotNull(message = "用户名不能为空")
-    private String username="";
+    private String username = "";
 
     @NotNull(message = "api_key不能为空")
-    private String api_key="";
-
+    private String api_key = "";
 
     private List<SmsTempVo> templateIds;
 
-    public void updateTempTips(){
-        if (null==this.templateIds || templateIds.isEmpty() ){
+    public void updateTempTips() {
+        if (null == this.templateIds || templateIds.isEmpty()) {
             return;
         }
-        templateIds.forEach(item->{
-            switch (item.getName()){
+        templateIds.forEach(item -> {
+            switch (item.getName()) {
                 case "code":
                     item.setTemp("您的验证码是：code，如非本人操作，请忽略本短信。");
                     break;

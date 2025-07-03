@@ -30,7 +30,7 @@ import io.ants.modules.sys.vo.ProductAttrItemVo;
 import io.ants.modules.sys.vo.ProductAttrVo;
 import io.ants.modules.sys.vo.TbOrderInitVo;
 import org.apache.commons.lang.StringUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,7 +57,7 @@ public class CdnProductController extends AbstractController {
     private TbOrderDao tbOrderDao;
 
     @PostMapping("/product/list")
-    @RequiresPermissions("sys:product:list")
+    @PreAuthorize("hasAuthority('sys:product:list')")
     public R productList(@RequestBody QueryCdnProductForm form){
        form.setUserType(UserTypeEnum.MANAGER_TYPE.getId());
        form.setVendibility(null);
@@ -71,7 +71,7 @@ public class CdnProductController extends AbstractController {
     }
 
     @PostMapping("/product/save")
-    @RequiresPermissions("sys:product:save")
+    @PreAuthorize("hasAuthority('sys:product:save')")
     public R productSave(@RequestBody Map<String, Object> params){
        return R.ok().put("data",cdnSuitService.saveProduct(params));
 
@@ -79,19 +79,19 @@ public class CdnProductController extends AbstractController {
 
     @SysLog("保存产品")
     @GetMapping("/product/delete")
-    @RequiresPermissions("sys:product:save")
+    @PreAuthorize("hasAuthority('sys:product:save')")
     public R productDelete(@RequestParam Integer id){
         return R.ok().put("data",cdnSuitService.deleteProduct(id));
     }
 
     @PostMapping("/productAttr/list")
-    @RequiresPermissions("sys:product:list")
+    @PreAuthorize("hasAuthority('sys:product:list')")
     public R productAttrList(@RequestBody PageSimpleForm form){
        return R.ok().put("data",cdnSuitService.getProductAttrList(form));
     }
 
     @GetMapping("/productAttr/all")
-    @RequiresPermissions("sys:product:list")
+    @PreAuthorize("hasAuthority('sys:product:list')")
     public R productAttrAll(){
         return  R.ok().put("data",cdnSuitService.getAllProductAttr());
     }
@@ -103,7 +103,7 @@ public class CdnProductController extends AbstractController {
 
     @SysLog("保存产品属性")
     @PostMapping("/productAttr/save")
-    @RequiresPermissions("sys:product:save")
+    @PreAuthorize("hasAuthority('sys:product:save')")
     public R productAttr_save(@RequestBody Map<String, Object> params){
         CdnProductAttrEntity attrEntity= cdnSuitService.SaveProductAttr(params);
         return  R.ok().put("data",attrEntity);
@@ -111,13 +111,13 @@ public class CdnProductController extends AbstractController {
 
     @SysLog("删除产品属性")
     @GetMapping("/productAttr/delete")
-    @RequiresPermissions("sys:product:save")
+    @PreAuthorize("hasAuthority('sys:product:save')")
     public R productAttrDelete(@RequestParam Integer id){
         return R.ok().put("data",cdnSuitService.deleteProductAttr(id));
     }
 
     @PostMapping("/order/list")
-    @RequiresPermissions("sys:order:list")
+    @PreAuthorize("hasAuthority('sys:order:list')")
     public R orderList(@RequestBody Map<String, Object> params){
         if(params.containsKey("user")){
             String user=params.get("user").toString();
@@ -131,20 +131,20 @@ public class CdnProductController extends AbstractController {
 
     @SysLog("删除订单")
     @GetMapping("/order/delete")
-    @RequiresPermissions("sys:order:save")
+    @PreAuthorize("hasAuthority('sys:order:save')")
     public R orderDelete(@RequestParam Integer id){
           tbOrderDao.update(null,new UpdateWrapper<TbOrderEntity>().eq("id",id).set("is_delete",1));
           return R.ok();
     }
 
     @PostMapping("/order/create")
-    @RequiresPermissions("sys:order:save")
+    @PreAuthorize("hasAuthority('sys:order:save')")
     public R orderCreate(@RequestBody SubmitOrderForm submitOrderForm){
         return  cdnSuitService.createOrder(submitOrderForm);
     }
 
     @PostMapping("/suit/list")
-    @RequiresPermissions("sys:order:list")
+    @PreAuthorize("hasAuthority('sys:order:list')")
     public R suitList(@RequestBody Map<String, Object> params){
         //{\"page\":1,\"limit\":10,\"serialNumber\":\"1\",\"user\":\"test\",\"startTime\":0,\"endTime\":1950769152,\"mode\":1}
         //SuitListForm
@@ -186,7 +186,7 @@ public class CdnProductController extends AbstractController {
 
     @SysLog("修改用户套餐属性")
     @PostMapping("/suit/attr/update")
-    @RequiresPermissions("sys:order:save")
+    @PreAuthorize("hasAuthority('sys:order:save')")
     public R userSuitUpdateAttr(@RequestBody Map<String, Object> params){
         String serialNumber=null;
         if (params.containsKey("serialNumber") ){
@@ -301,7 +301,7 @@ public class CdnProductController extends AbstractController {
      * 创建后付费套餐
      */
     @PostMapping("/suit/create/postpaid")
-    @RequiresPermissions("sys:order:save")
+    @PreAuthorize("hasAuthority('sys:order:save')")
     public R postpaid_create(@RequestBody Map param){
         if(!param.containsKey("userId") || !param.containsKey("productId")){
             return R.error("缺少参数【userId】【productId】");        }
@@ -326,7 +326,7 @@ public class CdnProductController extends AbstractController {
 
     @SysLog("注销套餐")
     @GetMapping("/suit/cancellation")
-    @RequiresPermissions("sys:order:save")
+    @PreAuthorize("hasAuthority('sys:order:save')")
     public R cancellationSuit( @RequestParam String SerialNumber){
         boolean result= cdnSuitService.cancellationSuit(null,SerialNumber);
         if (result){
@@ -338,7 +338,7 @@ public class CdnProductController extends AbstractController {
 
     @SysLog("清算后付费套餐")
     @GetMapping("/suit/liquidation")
-    @RequiresPermissions("sys:order:save")
+    @PreAuthorize("hasAuthority('sys:order:save')")
     public R suit_liquidation(@RequestParam String SerialNumber){
        cdnSuitService.liquidationSuit(null,SerialNumber);
        return R.ok();

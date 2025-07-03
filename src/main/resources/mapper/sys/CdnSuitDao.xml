@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.ants.modules.sys.dao.CdnSuitDao">
+
+    <select id="getAllAvailableSuit" resultType="io.ants.modules.sys.entity.CdnSuitEntity">
+        SELECT DISTINCT serial_number
+        FROM cdn_suit
+        WHERE end_time > NOW()
+        AND status = 1
+    </select>
+    <select id="selectLatestByUser" resultType="io.ants.modules.sys.entity.CdnSuitEntity">
+        SELECT *
+        FROM cdn_suit t1
+        WHERE t1.suit_type = #{suitType}
+          AND t1.user_id = #{userId}
+          AND t1.status IN
+          <foreach collection="statusArray" item="status" open="(" separator="," close=")">
+              #{status}
+          </foreach>
+          AND NOT EXISTS (
+              SELECT 1 FROM cdn_suit t2
+              WHERE t2.serial_number = t1.serial_number AND t2.id > t1.id
+          )
+        ORDER BY t1.id DESC
+    </select>
+</mapper>

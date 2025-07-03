@@ -14,13 +14,12 @@ import io.ants.modules.sys.dao.TbDnsConfigDao;
 import io.ants.modules.sys.entity.TbDnsConfigEntity;
 import io.ants.modules.sys.enums.UserTypeEnum;
 import io.ants.modules.sys.service.DnsCApiService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
+ 
 import java.util.Map;
 
 /**
@@ -28,7 +27,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/app/dnsapi/")
-@Api(tags = "dnsapi")
+@Tag(name = "dnsapi")
 public class AppCApiController extends AbstractController {
 
     @Autowired
@@ -38,25 +37,25 @@ public class AppCApiController extends AbstractController {
 
     @Login
     @PostMapping("/list")
-    @ApiOperation("dns api list")
-    public R list(@ApiIgnore @RequestAttribute("userId") Long userId, @RequestBody Map params){
+    @Operation(summary = "dns api list")
+    public R list(@Parameter(hidden = true) @RequestAttribute("userId") Long userId, @RequestBody Map params){
         return R.ok().put("data",dnsCApiService.list(params, UserTypeEnum.USER_TYPE.getId(),userId));
     }
 
 
     @Login
     @GetMapping("/all")
-    @ApiOperation("dns api all")
-    public R allList(@ApiIgnore @RequestAttribute("userId") Long userId){
+    @Operation(summary = "dns api all")
+    public R allList(@Parameter(hidden = true) @RequestAttribute("userId") Long userId){
         return R.ok().put("data",dnsCApiService.allList(UserTypeEnum.USER_TYPE.getId(),userId));
     }
 
 
     @Login
     @PostMapping("/save")
-    @ApiOperation("dns api save")
+    @Operation(summary = "dns api save")
     @UserLog("dns api save")
-    public R save(@ApiIgnore @RequestAttribute("userId") Long userId, @RequestBody Map params){
+    public R save(@Parameter(hidden = true) @RequestAttribute("userId") Long userId, @RequestBody Map params){
         params.put("user_type",UserTypeEnum.USER_TYPE.getId());
         params.put("user_id",userId);
         return R.ok().put("data",dnsCApiService.save(params));
@@ -64,9 +63,9 @@ public class AppCApiController extends AbstractController {
 
     @Login
     @PostMapping("/delete")
-    @ApiOperation("dns api delete")
+    @Operation(summary = "dns api delete")
     @UserLog("dns api delete")
-    public R delete(@ApiIgnore @RequestAttribute("userId") Long userId,@RequestBody Map params){
+    public R delete(@Parameter(hidden = true) @RequestAttribute("userId") Long userId,@RequestBody Map params){
         checkDemoModify();
         if(params.containsKey("ids")){
             String ids=params.get("ids").toString();
@@ -79,8 +78,8 @@ public class AppCApiController extends AbstractController {
 
     @Login
     @GetMapping("/record/list")
-    @ApiOperation("dns record list")
-    public R  recordList(@ApiIgnore @RequestAttribute("userId") Long userId, @RequestParam Integer id){
+    @Operation(summary = "dns record list")
+    public R  recordList(@Parameter(hidden = true) @RequestAttribute("userId") Long userId, @RequestParam Integer id){
         TbDnsConfigEntity dnsConfig=tbDnsConfigDao.selectById(id);
         if(null==dnsConfig || !dnsConfig.getUserType().equals(UserTypeEnum.USER_TYPE.getId()) || !dnsConfig.getUserId().equals(userId) ){
             return R.error("无此配置");
@@ -98,8 +97,8 @@ public class AppCApiController extends AbstractController {
 
     @Login
     @GetMapping("/record/list/v2")
-    @ApiOperation("dns record list v2")
-    public R  recordListV2(@ApiIgnore @RequestAttribute("userId") Long userId, @RequestParam Integer id,@RequestParam String domain){
+    @Operation(summary = "dns record list v2")
+    public R  recordListV2(@Parameter(hidden = true) @RequestAttribute("userId") Long userId, @RequestParam Integer id,@RequestParam String domain){
         TbDnsConfigEntity dnsConfig=tbDnsConfigDao.selectById(id);
         if(null==dnsConfig || !dnsConfig.getUserType().equals(UserTypeEnum.USER_TYPE.getId()) || !dnsConfig.getUserId().equals(userId) ){
             return R.error("无此配置");
@@ -117,8 +116,8 @@ public class AppCApiController extends AbstractController {
 
     @Login
     @GetMapping("/line/list")
-    @ApiOperation("dns line  list")
-    public R  LineList(@ApiIgnore @RequestAttribute("userId") Long userId,@RequestParam Integer id){
+    @Operation(summary = "dns line  list")
+    public R  LineList(@Parameter(hidden = true) @RequestAttribute("userId") Long userId,@RequestParam Integer id){
         TbDnsConfigEntity dnsConfig=tbDnsConfigDao.selectById(id);
         if(null==dnsConfig || !dnsConfig.getUserType().equals(UserTypeEnum.USER_TYPE.getId()) || !dnsConfig.getUserId().equals(userId) ){
             return R.error("无此配置");
@@ -129,8 +128,8 @@ public class AppCApiController extends AbstractController {
 
     @Login
     @GetMapping("/line/list/v1")
-    @ApiOperation("dns line  list")
-    public R  LineList(@ApiIgnore @RequestAttribute("userId") Long userId,@RequestParam Integer id,@RequestParam String domain){
+    @Operation(summary = "dns line  list")
+    public R  LineList(@Parameter(hidden = true) @RequestAttribute("userId") Long userId,@RequestParam Integer id,@RequestParam String domain){
         TbDnsConfigEntity dnsConfig=tbDnsConfigDao.selectById(id);
         if(null==dnsConfig || !dnsConfig.getUserType().equals(UserTypeEnum.USER_TYPE.getId()) || !dnsConfig.getUserId().equals(userId) ){
             return R.error("无此配置");
@@ -142,8 +141,8 @@ public class AppCApiController extends AbstractController {
 
     @Login
     @GetMapping("/line/list/v2")
-    @ApiOperation("dns line  list")
-    public R  LineListV2(@ApiIgnore @RequestAttribute("userId") Long userId,@RequestParam Integer id,@RequestParam Integer parentId){
+    @Operation(summary = "dns line  list")
+    public R  LineListV2(@Parameter(hidden = true) @RequestAttribute("userId") Long userId,@RequestParam Integer id,@RequestParam Integer parentId){
         TbDnsConfigEntity dnsConfig=tbDnsConfigDao.selectById(id);
         if(null==dnsConfig || !dnsConfig.getUserType().equals(UserTypeEnum.USER_TYPE.getId()) || !dnsConfig.getUserId().equals(userId) ){
             return R.error("无此配置");
@@ -154,7 +153,7 @@ public class AppCApiController extends AbstractController {
     @Login
     @PostMapping("/record/add")
     @UserLog("dns record add")
-    public R recordAdd(@ApiIgnore @RequestAttribute("userId") Long userId,@RequestBody DnsAddRecordForm form){
+    public R recordAdd(@Parameter(hidden = true) @RequestAttribute("userId") Long userId,@RequestBody DnsAddRecordForm form){
         ValidatorUtils.validateEntity(form);
         if(null==form.getId()){
             return R.error("参数ID缺失！");
@@ -177,7 +176,7 @@ public class AppCApiController extends AbstractController {
     @Login
     @PostMapping("/record/remove")
     @UserLog("dns record remove")
-    public R recordRemove(@ApiIgnore @RequestAttribute("userId") Long userId,@RequestBody Map params){
+    public R recordRemove(@Parameter(hidden = true) @RequestAttribute("userId") Long userId,@RequestBody Map params){
         if(!params.containsKey("id") || !params.containsKey("recordId")){
             return R.error("参数缺失！");
         }
@@ -197,7 +196,7 @@ public class AppCApiController extends AbstractController {
     @Login
     @PostMapping("record/modify")
     @UserLog("dns record modify")
-    public R recordModify(@ApiIgnore @RequestAttribute("userId") Long userId,@RequestBody Map params){
+    public R recordModify(@Parameter(hidden = true) @RequestAttribute("userId") Long userId,@RequestBody Map params){
         DnsModifyRecordForm form= DataTypeConversionUtil.map2entity(params, DnsModifyRecordForm.class);
         if(null==form.getId()){
             return R.error("参数ID缺失！");
@@ -220,7 +219,7 @@ public class AppCApiController extends AbstractController {
     @Login
     @PostMapping("/record/info")
     @UserLog("dns record info")
-    public R recordInfo(@ApiIgnore @RequestAttribute("userId") Long userId,@RequestBody Map params){
+    public R recordInfo(@Parameter(hidden = true) @RequestAttribute("userId") Long userId,@RequestBody Map params){
         if(!params.containsKey("id") || !params.containsKey("top") || !params.containsKey("recordType")){
             return R.error("参数缺失！");
         }

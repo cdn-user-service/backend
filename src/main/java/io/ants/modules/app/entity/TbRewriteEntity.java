@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * 
@@ -35,17 +35,16 @@ public class TbRewriteEntity implements Serializable {
 	/**
 	 * 
 	 */
-	@NotBlank(message="serialNumber不能为空")
+	@NotBlank(message = "serialNumber不能为空")
 	private String serialNumber;
 	/**
 	 * 
 	 */
-	@NotBlank(message="serverName不能为空")
+	@NotBlank(message = "serverName不能为空")
 	private String serverName;
 
-	//1==REWRITE;2==gzip_js
-	private Integer  rewriteType=1;
-
+	// 1==REWRITE;2==gzip_js
+	private Integer rewriteType = 1;
 
 	/**
 	 * 
@@ -54,8 +53,7 @@ public class TbRewriteEntity implements Serializable {
 	/**
 	 * 
 	 */
-	private Integer rewriteMode=307;
-
+	private Integer rewriteMode = 307;
 
 	/**
 	 * 跟随方式
@@ -69,15 +67,14 @@ public class TbRewriteEntity implements Serializable {
 	/**
 	 * 
 	 */
-	@NotBlank(message="target不能为空")
+	@NotBlank(message = "target不能为空")
 	private String target;
 
-	private String  jsContent;
+	private String jsContent;
 
 	private String remark;
 
-	private Integer status=1;
-
+	private Integer status = 1;
 
 	private String certStr;
 

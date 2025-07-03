@@ -12,7 +12,7 @@ import io.ants.common.utils.PageUtils;
 import io.ants.common.utils.R;
 import io.ants.modules.job.entity.ScheduleJobLogEntity;
 import io.ants.modules.job.service.ScheduleJobLogService;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +33,7 @@ public class ScheduleJobLogController {
 	 * 定时任务日志列表
 	 */
 	@PostMapping("/list")
-	@RequiresPermissions("sys:schedule:log")
+	@PreAuthorize("hasAuthority('sys:schedule:log')")
 	public R list(@RequestBody Map<String, Object> params){
 		PageUtils page = scheduleJobLogService.queryPage(params);
 		return R.ok().put("page", page);

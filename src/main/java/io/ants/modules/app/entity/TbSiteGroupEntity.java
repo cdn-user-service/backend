@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -22,13 +22,13 @@ public class TbSiteGroupEntity {
     @NotNull
     private String siteIds;
 
-    private Integer weight=0;
+    private Integer weight = 0;
 
-    private String  remark;
+    private String remark;
 
     private Integer createUserType;
 
-    private Date createTime=new Date();
+    private Date createTime = new Date();
 
     @TableField(exist = false)
     private List<TbSiteEntity> siteList;

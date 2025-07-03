@@ -1,6 +1,5 @@
 package io.ants.modules.sys.entity;
 
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -27,5 +26,5 @@ public class TbWorkOrderCategoryEntity {
     private Date createdate;
 
     @TableField(exist = false)
-    private Integer childCount;
+    private Long childCount;
 }

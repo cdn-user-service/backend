@@ -8,13 +8,13 @@ import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.Map;
 
 /**
  * @author ：zz
  * @date ：Created in 2022/5/19 10:15
- * https://blog.csdn.net/u011320413/article/details/124710384
+ *       https://blog.csdn.net/u011320413/article/details/124710384
  * @description：消费监听，自动ack
  */
 @Slf4j
@@ -27,9 +27,9 @@ public class ConsumeListener implements StreamListener<String, MapRecord<String,
     private static ConsumeListener consumeListener;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         consumeListener = this;
-        consumeListener.redisUtil=this.redisUtil;
+        consumeListener.redisUtil = this.redisUtil;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ConsumeListener implements StreamListener<String, MapRecord<String,
         RecordId id = message.getId();
         Map<String, String> map = message.getValue();
         log.info("[自动] group:[group-b] 接收到一个消息 stream:[{}],id:[{}],value:[{}]", stream, id, map);
-        //消费完毕删除该条消息
+        // 消费完毕删除该条消息
         consumeListener.redisUtil.streamDel(stream, id.getValue());
     }
 }

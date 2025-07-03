@@ -1,12 +1,11 @@
 package io.ants.modules.app.form;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@ApiModel(value = "创建工单")
+@Schema(name = "创建工单")
 public class CreateWorkOrder {
-
 
     private  Integer categoryId;
 
@@ -17,7 +16,5 @@ public class CreateWorkOrder {
     private String description;
 
     private String images;
-
-
 
 }

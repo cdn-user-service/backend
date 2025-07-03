@@ -8,7 +8,6 @@
 
 package io.ants.modules.app.service.impl;
 
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.code.kaptcha.Producer;
@@ -27,7 +26,7 @@ import java.util.Date;
  *
  * @author Mark sunlightcs@gmail.com
  */
-@Service("appCaptchaService")
+@Service
 public class AppCaptchaServiceImpl extends ServiceImpl<SysCaptchaDao, SysCaptchaEntity> implements AppCaptchaService {
     @Autowired
     private Producer producer;
@@ -35,14 +34,14 @@ public class AppCaptchaServiceImpl extends ServiceImpl<SysCaptchaDao, SysCaptcha
     @Override
     public BufferedImage getCaptcha(String uuid) {
 
-        //生成文字验证码
+        // 生成文字验证码
         String code = producer.createText();
         SysCaptchaEntity captchaEntity = new SysCaptchaEntity();
         captchaEntity.setUuid(uuid);
         captchaEntity.setCode(code);
-        //5分钟后过期
+        // 5分钟后过期
         captchaEntity.setExpireTime(DateUtils.addDateMinutes(new Date(), 5));
-        if(0!=this.count(new QueryWrapper<SysCaptchaEntity>().eq("uuid",uuid))){
+        if (0 != this.count(new QueryWrapper<SysCaptchaEntity>().eq("uuid", uuid))) {
             return producer.createImage(code);
         }
         this.save(captchaEntity);
@@ -52,15 +51,17 @@ public class AppCaptchaServiceImpl extends ServiceImpl<SysCaptchaDao, SysCaptcha
     @Override
     public boolean validate(String uuid, String code) {
 
-        SysCaptchaEntity captchaEntity = this.getOne(new QueryWrapper<SysCaptchaEntity>().eq("uuid", uuid).last("limit 1"));
-        if(captchaEntity == null){
+        SysCaptchaEntity captchaEntity = this
+                .getOne(new QueryWrapper<SysCaptchaEntity>().eq("uuid", uuid).last("limit 1"));
+        if (captchaEntity == null) {
             return false;
         }
 
-        //删除验证码
+        // 删除验证码
         this.removeById(uuid);
 
-        if(captchaEntity.getCode().equalsIgnoreCase(code) && captchaEntity.getExpireTime().getTime() >= System.currentTimeMillis()){
+        if (captchaEntity.getCode().equalsIgnoreCase(code)
+                && captchaEntity.getExpireTime().getTime() >= System.currentTimeMillis()) {
             return true;
         }
 

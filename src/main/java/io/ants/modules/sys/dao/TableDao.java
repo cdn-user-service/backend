@@ -43,4 +43,7 @@ public interface TableDao {
 
     @Delete("DELETE FROM sys_menu")
     void clearSysMenuTable();
+
+    @Select("SELECT COUNT(*) FROM sys_menu")
+    Long countSysMenuTable();
 }

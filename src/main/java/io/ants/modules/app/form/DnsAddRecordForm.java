@@ -2,7 +2,7 @@ package io.ants.modules.app.form;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class DnsAddRecordForm {
@@ -13,7 +13,7 @@ public class DnsAddRecordForm {
     private String recordType;
     private String line;
     private String value;
-    private String ttl ;
+    private String ttl;
 
     private String domain;
 }

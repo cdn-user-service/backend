@@ -2,7 +2,7 @@ package io.ants.modules.sys.form;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class AddClientIpForm {
@@ -13,8 +13,7 @@ public class AddClientIpForm {
     @NotNull
     private String clientIps;
 
-
     @NotNull
-    //  //1=main;2=middle;3=backup;4=回源IP
+    // //1=main;2=middle;3=backup;4=回源IP
     private int clientType;
 }

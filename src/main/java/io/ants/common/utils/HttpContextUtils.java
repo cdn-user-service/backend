@@ -11,7 +11,7 @@ package io.ants.common.utils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author Administrator
@@ -22,13 +22,13 @@ public class HttpContextUtils {
 		return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
 	}
 
-	public static String getDomain(){
+	public static String getDomain() {
 		HttpServletRequest request = getHttpServletRequest();
 		StringBuffer url = request.getRequestURL();
 		return url.delete(url.length() - request.getRequestURI().length(), url.length()).toString();
 	}
 
-	public static String getOrigin(){
+	public static String getOrigin() {
 		HttpServletRequest request = getHttpServletRequest();
 		return request.getHeader("Origin");
 	}

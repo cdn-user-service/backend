@@ -22,7 +22,7 @@ import io.ants.modules.sys.entity.SysUserRoleEntity;
 import io.ants.modules.sys.service.SysMenuService;
 import io.ants.modules.sys.service.SysRoleMenuService;
 import io.ants.modules.sys.service.SysRoleService;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,7 +65,7 @@ public class SysRoleController extends AbstractController {
 	 * 角色列表
 	 */
 	@PostMapping("/list")
-	@RequiresPermissions("sys:role:list")
+	@PreAuthorize("hasAuthority('sys:role:list')")
 	public R list(@RequestBody Map<String, Object> params){
 		//如果不是超级管理员，则只查询自己创建的角色列表
 		if(isAdmin()){
@@ -81,7 +81,7 @@ public class SysRoleController extends AbstractController {
 	 * 角色列表
 	 */
 	@GetMapping("/select")
-	@RequiresPermissions("sys:role:select")
+	@PreAuthorize("hasAuthority('sys:role:select')")
 	public R select(){
 		Map<String, Object> map = new HashMap<>();
 		//如果不是超级管理员，则只查询自己所拥有的角色列表
@@ -118,7 +118,7 @@ public class SysRoleController extends AbstractController {
 	 * 角色信息
 	 */
 	@GetMapping("/info/{roleId}")
-	@RequiresPermissions("sys:role:info")
+	@PreAuthorize("hasAuthority('sys:role:info')")
 	public R info(@PathVariable("roleId") Long roleId){
 		SysRoleEntity role = sysRoleService.getById(roleId);
 		
@@ -134,7 +134,7 @@ public class SysRoleController extends AbstractController {
 	 */
 	@SysLog("保存角色")
 	@PostMapping("/save")
-	@RequiresPermissions("sys:role:save")
+	@PreAuthorize("hasAuthority('sys:role:save')")
 	public R save(@RequestBody SysRoleEntity role){
 		ValidatorUtils.validateEntity(role);
 		
@@ -149,7 +149,7 @@ public class SysRoleController extends AbstractController {
 	 */
 	@SysLog("修改角色")
 	@PostMapping("/update")
-	@RequiresPermissions("sys:role:update")
+	@PreAuthorize("hasAuthority('sys:role:update')")
 	public R update(@RequestBody SysRoleEntity role){
 		ValidatorUtils.validateEntity(role);
 		
@@ -164,7 +164,7 @@ public class SysRoleController extends AbstractController {
 	 */
 	@SysLog("删除角色")
 	@PostMapping("/delete")
-	@RequiresPermissions("sys:role:delete")
+	@PreAuthorize("hasAuthority('sys:role:delete')")
 	public R delete(@RequestBody Map params){
 		if(!params.containsKey("ids")){
 			return R.error("参数缺失");

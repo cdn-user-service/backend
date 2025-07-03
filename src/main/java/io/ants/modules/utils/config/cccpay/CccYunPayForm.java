@@ -2,7 +2,7 @@ package io.ants.modules.utils.config.cccpay;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class CccYunPayForm {
@@ -26,15 +26,15 @@ public class CccYunPayForm {
     private String out_trade_no;
 
     @NotNull
-    private String notify_url="";
+    private String notify_url = "";
 
-    private String return_url="";
+    private String return_url = "";
 
     /**
      * 商品名称
      */
     @NotNull
-    private String name="";
+    private String name = "";
 
     /**
      * 商品金额 单位：元，最大2位小数
@@ -48,17 +48,16 @@ public class CccYunPayForm {
     @NotNull
     private String clientip;
 
-    private String device="pc";
+    private String device = "pc";
 
     /**
-     * 	支付后原样返回
+     * 支付后原样返回
      */
-    private String  param;
+    private String param;
 
-
-    private String sign="";
+    private String sign = "";
 
     @NotNull
-    private String sign_type="MD5";
+    private String sign_type = "MD5";
 
 }

@@ -12,8 +12,10 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.logging.Logger;
+import org.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
+@MapperScan("io.ants.modules.*.dao")
 public class CdnSysApplication {
 	private static final Logger logger = Logger.getLogger(CdnSysApplication.class.getName());
 
@@ -25,9 +27,7 @@ public class CdnSysApplication {
 		// Log a test message
 		logger.info("Application starting...");
 
-
 		SpringApplication.run(CdnSysApplication.class, args);
-
 
 	}
 

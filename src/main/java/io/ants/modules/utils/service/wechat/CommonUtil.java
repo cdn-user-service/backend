@@ -1,16 +1,14 @@
 package io.ants.modules.utils.service.wechat;
 
-
 import org.apache.commons.lang.StringUtils;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
-
 
 public class CommonUtil {
 
@@ -53,9 +51,9 @@ public class CommonUtil {
         return null;
     }
 
-
     /**
      * 获取ip
+     * 
      * @param request
      * @return
      */
@@ -83,9 +81,9 @@ public class CommonUtil {
             ip = request.getRemoteAddr();
         }
 
-        //使用代理，则获取第一个IP地址
-        if(StringUtils.isNotEmpty(ip) && ip.length() > 4) {
-            if(ip.indexOf(",") > 0) {
+        // 使用代理，则获取第一个IP地址
+        if (StringUtils.isNotEmpty(ip) && ip.length() > 4) {
+            if (ip.indexOf(",") > 0) {
                 ip = ip.substring(0, ip.indexOf(","));
             }
         }

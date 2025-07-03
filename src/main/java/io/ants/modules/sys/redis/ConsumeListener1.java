@@ -8,7 +8,7 @@ import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.Map;
 
 /**
@@ -26,9 +26,9 @@ public class ConsumeListener1 implements StreamListener<String, MapRecord<String
     private static ConsumeListener1 consumeListener1;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         consumeListener1 = this;
-        consumeListener1.redisUtil=this.redisUtil;
+        consumeListener1.redisUtil = this.redisUtil;
     }
 
     @Override

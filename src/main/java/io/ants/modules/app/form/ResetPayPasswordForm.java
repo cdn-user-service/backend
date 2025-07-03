@@ -1,23 +1,23 @@
 package io.ants.modules.app.form;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class ResetPayPasswordForm {
 
-    @ApiModelProperty(value = "newPayPassword",example = "123456")
-    @NotNull(message="code 不能为空")
+    @Schema(description = "newPayPassword", example = "123456")
+    @NotNull(message = "code 不能为空")
     private String newPayPassword;
 
     private String mail;
 
-    private  String mobile;
+    private String mobile;
 
-    @ApiModelProperty(value = "code",example = "1111")
-    @NotNull(message="code 不能为空")
+    @Schema(description = "code", example = "1111")
+    @NotNull(message = "code 不能为空")
     private String code;
 
 }

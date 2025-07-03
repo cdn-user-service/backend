@@ -48,7 +48,7 @@ public class SysCaptchaServiceImpl extends ServiceImpl<SysCaptchaDao, SysCaptcha
         captchaEntity.setCode(code);
         //5分钟后过期
         captchaEntity.setExpireTime(DateUtils.addDateMinutes(new Date(), 5));
-        Integer count=this.count(new QueryWrapper<SysCaptchaEntity>().eq("uuid",uuid));
+        Long count=this.count(new QueryWrapper<SysCaptchaEntity>().eq("uuid",uuid));
         if(0!=count){
             return producer.createImage(code);
         }

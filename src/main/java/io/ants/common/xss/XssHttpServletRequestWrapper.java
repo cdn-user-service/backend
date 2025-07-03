@@ -6,10 +6,10 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -22,9 +22,9 @@ import java.util.Map;
  * @author Mark sunlightcs@gmail.com
  */
 public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
-    //没被包装过的HttpServletRequest（特殊场景，需要自己过滤）
+    // 没被包装过的HttpServletRequest（特殊场景，需要自己过滤）
     HttpServletRequest orgRequest;
-    //html过滤
+    // html过滤
     private final static HTMLFilter HTML_FILTER = new HTMLFilter();
 
     public XssHttpServletRequestWrapper(HttpServletRequest request) {
@@ -34,18 +34,18 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        //非json类型，直接返回
-        if(!MediaType.APPLICATION_JSON_VALUE.equalsIgnoreCase(super.getHeader(HttpHeaders.CONTENT_TYPE))){
+        // 非json类型，直接返回
+        if (!MediaType.APPLICATION_JSON_VALUE.equalsIgnoreCase(super.getHeader(HttpHeaders.CONTENT_TYPE))) {
             return super.getInputStream();
         }
 
-        //为空，直接返回
+        // 为空，直接返回
         String json = IOUtils.toString(super.getInputStream(), StandardCharsets.UTF_8);
         if (StringUtils.isBlank(json)) {
             return super.getInputStream();
         }
 
-        //xss过滤
+        // xss过滤
         json = xssEncode(json);
         final ByteArrayInputStream bis = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
         return new ServletInputStream() {
@@ -66,12 +66,12 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
             @Override
             public int read() {
-                try{
+                try {
                     return bis.read();
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-                return  -1;
+                return -1;
             }
         };
     }
@@ -99,9 +99,9 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
-    public Map<String,String[]> getParameterMap() {
-        Map<String,String[]> map = new LinkedHashMap<>();
-        Map<String,String[]> parameters = super.getParameterMap();
+    public Map<String, String[]> getParameterMap() {
+        Map<String, String[]> map = new LinkedHashMap<>();
+        Map<String, String[]> parameters = super.getParameterMap();
         for (String key : parameters.keySet()) {
             String[] values = parameters.get(key);
             for (int i = 0; i < values.length; i++) {

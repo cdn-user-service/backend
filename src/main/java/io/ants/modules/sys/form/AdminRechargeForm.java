@@ -2,7 +2,7 @@ package io.ants.modules.sys.form;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class AdminRechargeForm {
@@ -13,7 +13,6 @@ public class AdminRechargeForm {
     @NotNull
     private Integer amount;
 
-    private String remark="";
-
+    private String remark = "";
 
 }

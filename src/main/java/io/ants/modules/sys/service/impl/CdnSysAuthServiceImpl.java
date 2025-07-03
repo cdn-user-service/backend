@@ -39,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -53,9 +53,9 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Integer HttpMethodGet=0;
-    private final Integer HttpMethodPost=1;
-    static   Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
+    private final Integer HttpMethodGet = 0;
+    private final Integer HttpMethodPost = 1;
+    static Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
 
     @Autowired
     private RedisUtils redisUtils;
@@ -74,30 +74,29 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
     @Autowired
     private CdnMakeFileService cdnMakeFileService;
     @Autowired
-    private CdnClientAreaDao cdnClientAreaDao ;
+    private CdnClientAreaDao cdnClientAreaDao;
     @Autowired
     private TbCertifyDao tbCertifyDao;
     @Autowired
     private CdnClientGroupChildConfDao groupChildConfDao;
 
-    private void restartScan(){
+    private void restartScan() {
         ShellUtils.execShell("pkill port-scan");
         ShellUtils.execShell("pkill ants_port_scan");
     }
 
-    private void updateNodeIpList(){
-        StaticVariableUtils.synNodeIpTimeTemp=System.currentTimeMillis();
-        if (StaticVariableUtils.NodeIpList.isEmpty()){
+    private void updateNodeIpList() {
+        StaticVariableUtils.synNodeIpTimeTemp = System.currentTimeMillis();
+        if (StaticVariableUtils.NodeIpList.isEmpty()) {
             StaticVariableUtils.NodeIpList.add("0.0.0.0");
         }
-        List<CdnClientEntity>list=cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
+        List<CdnClientEntity> list = cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
                 .select("client_ip")
-                .notIn("client_ip",StaticVariableUtils.NodeIpList)
-        );
-        list.forEach(item->{
-            if(StringUtils.isNotBlank(item.getClientIp())){
-                //logger.info(item.getClientIp());
-                if(!StaticVariableUtils.NodeIpList.contains(item.getClientIp())){
+                .notIn("client_ip", StaticVariableUtils.NodeIpList));
+        list.forEach(item -> {
+            if (StringUtils.isNotBlank(item.getClientIp())) {
+                // logger.info(item.getClientIp());
+                if (!StaticVariableUtils.NodeIpList.contains(item.getClientIp())) {
                     StaticVariableUtils.NodeIpList.add(item.getClientIp());
                 }
             }
@@ -107,49 +106,53 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     /**
      * 获取授权
+     * 
      * @return
      */
     @Override
     public String getAuthInfo() {
-        if( StaticVariableUtils.authInfoMap.containsKey("time") ){
-            if(Math.abs(System.currentTimeMillis()-(long)StaticVariableUtils.authInfoMap.get("time"))<60*1000){
-                if(StaticVariableUtils.authInfoMap.containsKey("data")){
+        if (StaticVariableUtils.authInfoMap.containsKey("time")) {
+            if (Math.abs(System.currentTimeMillis() - (long) StaticVariableUtils.authInfoMap.get("time")) < 60 * 1000) {
+                if (StaticVariableUtils.authInfoMap.containsKey("data")) {
                     return StaticVariableUtils.authInfoMap.get("data").toString();
                 }
             }
         }
-        try{
-            String resData= QuerySysAuth.getSysAuthInfoVo();
+        try {
+            String resData = QuerySysAuth.getSysAuthInfoVo();
             CdnSysAuthInfoVo cdnSysAuthInfoVo = DataTypeConversionUtil.string2Entity(resData, CdnSysAuthInfoVo.class);
-            if(null!=resData && null!= cdnSysAuthInfoVo){
-                StaticVariableUtils.authInfoMap.put("time",System.currentTimeMillis());
-                StaticVariableUtils.authInfoMap.put("data",resData);
-                JSONObject jsonData=JSONObject.parseObject(resData);
-                if(jsonData.containsKey("master_ip") && jsonData.containsKey("endtime") && jsonData.containsKey("goods_code")){
-                    StaticVariableUtils.goods_code= cdnSysAuthInfoVo.getGoods_code();
+            if (null != resData && null != cdnSysAuthInfoVo) {
+                StaticVariableUtils.authInfoMap.put("time", System.currentTimeMillis());
+                StaticVariableUtils.authInfoMap.put("data", resData);
+                JSONObject jsonData = JSONObject.parseObject(resData);
+                if (jsonData.containsKey("master_ip") && jsonData.containsKey("endtime")
+                        && jsonData.containsKey("goods_code")) {
+                    StaticVariableUtils.goods_code = cdnSysAuthInfoVo.getGoods_code();
                     StaticVariableUtils.authMasterIp = cdnSysAuthInfoVo.getMaster_ip();
-                    StaticVariableUtils.authEndTime =Integer.parseInt(cdnSysAuthInfoVo.getEndtime());
-                    if (StringUtils.isNotBlank(QuerySysAuth.AUTH_GOODS_CODE_HEAD) && !StaticVariableUtils.goods_code.startsWith(QuerySysAuth.AUTH_GOODS_CODE_HEAD)){
+                    StaticVariableUtils.authEndTime = Integer.parseInt(cdnSysAuthInfoVo.getEndtime());
+                    if (StringUtils.isNotBlank(QuerySysAuth.AUTH_GOODS_CODE_HEAD)
+                            && !StaticVariableUtils.goods_code.startsWith(QuerySysAuth.AUTH_GOODS_CODE_HEAD)) {
                         throw new RRException("JAR ERROR");
                     }
-                    StaticVariableUtils.checkNodeInputToken= HashUtils.md5ofString("check_"+StaticVariableUtils.authMasterIp);
-                    if (StringUtils.isNotBlank(cdnSysAuthInfoVo.getExclusive_mode())){
-                        String[] exclusiveModeStr= cdnSysAuthInfoVo.getExclusive_mode().split(",");
+                    StaticVariableUtils.checkNodeInputToken = HashUtils
+                            .md5ofString("check_" + StaticVariableUtils.authMasterIp);
+                    if (StringUtils.isNotBlank(cdnSysAuthInfoVo.getExclusive_mode())) {
+                        String[] exclusiveModeStr = cdnSysAuthInfoVo.getExclusive_mode().split(",");
                         StaticVariableUtils.exclusive_modeList.addAll(Arrays.asList(exclusiveModeStr));
                     }
-                    redisUtils.set("public:master:api:dnsrecord",StaticVariableUtils.goods_code,-1);
+                    redisUtils.set("public:master:api:dnsrecord", StaticVariableUtils.goods_code, -1);
                 }
-                String r_version= cdnSysAuthInfoVo.getVersion();
-                String l_version=StaticVariableUtils.JAR_VERSION;
-                if(StringUtils.isNotBlank(l_version)){
-                    if(!r_version.equals(l_version)){
-                        this.updateRemoteVersion(cdnSysAuthInfoVo.getMaster_ip(),l_version);
+                String r_version = cdnSysAuthInfoVo.getVersion();
+                String l_version = StaticVariableUtils.JAR_VERSION;
+                if (StringUtils.isNotBlank(l_version)) {
+                    if (!r_version.equals(l_version)) {
+                        this.updateRemoteVersion(cdnSysAuthInfoVo.getMaster_ip(), l_version);
                     }
                 }
                 this.updateNodeIpList();
                 return resData;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -159,40 +162,40 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
      * 从Auth 获取所有节点
      */
     private String getNodeListFromAnts() {
-        if(StaticVariableUtils.authNodeListMap.containsKey("time") ){
-            if(Math.abs(System.currentTimeMillis()-(long)StaticVariableUtils.authNodeListMap.get("time"))<60*1000){
-                if(StaticVariableUtils.authNodeListMap.containsKey("data")){
+        if (StaticVariableUtils.authNodeListMap.containsKey("time")) {
+            if (Math.abs(System.currentTimeMillis() - (long) StaticVariableUtils.authNodeListMap.get("time")) < 60
+                    * 1000) {
+                if (StaticVariableUtils.authNodeListMap.containsKey("data")) {
                     return StaticVariableUtils.authNodeListMap.get("data").toString();
                 }
             }
         }
-        String url= QuerySysAuth.getAuthAddress();
-        String param="func=QueryNodeList";
-        try{
-            String resData= QuerySysAuth.cdnSysAuthHttpRequest(HttpMethodGet,url,param);
-            if(StringUtils.isNotBlank(resData)){
-                StaticVariableUtils.authNodeListMap.put("time",System.currentTimeMillis());
-                StaticVariableUtils.authNodeListMap.put("data",resData);
+        String url = QuerySysAuth.getAuthAddress();
+        String param = "func=QueryNodeList";
+        try {
+            String resData = QuerySysAuth.cdnSysAuthHttpRequest(HttpMethodGet, url, param);
+            if (StringUtils.isNotBlank(resData)) {
+                StaticVariableUtils.authNodeListMap.put("time", System.currentTimeMillis());
+                StaticVariableUtils.authNodeListMap.put("data", resData);
                 this.updateNodeIpList();
                 return resData;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private void updateRegNodeClientInfo(String ip){
-        if (!QuerySysAuth.useMainRegInfo()){
+    private void updateRegNodeClientInfo(String ip) {
+        if (!QuerySysAuth.useMainRegInfo()) {
             return;
         }
-        List<CdnClientEntity>list =cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
-                .eq("client_ip",ip)
-        );
-        list.forEach(item->{
-            //locClient.setStatus(ClientStatusEnum.ALREADY_REGISTER.getId());
+        List<CdnClientEntity> list = cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
+                .eq("client_ip", ip));
+        list.forEach(item -> {
+            // locClient.setStatus(ClientStatusEnum.ALREADY_REGISTER.getId());
             item.setStatus(ClientStatusEnum.ALREADY_REGISTER.getId());
-            item.setEffectiveEndingTime(DateUtils.stamp2date(StaticVariableUtils.authEndTime) );
+            item.setEffectiveEndingTime(DateUtils.stamp2date(StaticVariableUtils.authEndTime));
             item.setRegInfo(StaticVariableUtils.authInfoMap.get("data").toString());
             cdnClientDao.updateById(item);
         });
@@ -200,54 +203,54 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     @Override
     public String regNode(String NodeIp) {
-        String url= QuerySysAuth.getAuthAddress();
-        String params="func=EnableNode&ip="+NodeIp;
+        String url = QuerySysAuth.getAuthAddress();
+        String params = "func=EnableNode&ip=" + NodeIp;
         try {
             StaticVariableUtils.authNodeListMap.clear();
-            String resData= QuerySysAuth.cdnSysAuthHttpRequest(HttpMethodPost,url,params);
-            //同步节点
+            String resData = QuerySysAuth.cdnSysAuthHttpRequest(HttpMethodPost, url, params);
+            // 同步节点
             this.updateRegNodeClientInfo(NodeIp);
             this.SyncAntsNodeListThread();
-            if(StringUtils.isNotBlank(resData)){
-               //logger.debug("resData:"+resData);
+            if (StringUtils.isNotBlank(resData)) {
+                // logger.debug("resData:"+resData);
                 this.updateNodeIpList();
-                return  resData;
+                return resData;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return  "";
+        return "";
     }
 
     @Override
     public String deleteNode(String NodeIp) {
-        String url= QuerySysAuth.getAuthAddress();
-        String params="func=DeleteNode&ip="+NodeIp;
+        String url = QuerySysAuth.getAuthAddress();
+        String params = "func=DeleteNode&ip=" + NodeIp;
         try {
             StaticVariableUtils.authNodeListMap.clear();
-            String resData= QuerySysAuth.cdnSysAuthHttpRequest(HttpMethodPost,url,params);
-            if(StringUtils.isNotBlank(resData)){
+            String resData = QuerySysAuth.cdnSysAuthHttpRequest(HttpMethodPost, url, params);
+            if (StringUtils.isNotBlank(resData)) {
                 this.updateNodeIpList();
                 this.updatePrometheusConf();
-                return  resData;
+                return resData;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return  null;
+        return null;
     }
 
-    private void updateRemoteVersion(String NodeIp, String version){
+    private void updateRemoteVersion(String NodeIp, String version) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
-                    String url= QuerySysAuth.getAuthAddress();
-                    String params="func=UpdateVersionInfo&ip="+NodeIp+"&version="+version;
-                    HttpRequest.sendPost(url,params);
-                }catch (Exception e){
+                try {
+                    String url = QuerySysAuth.getAuthAddress();
+                    String params = "func=UpdateVersionInfo&ip=" + NodeIp + "&version=" + version;
+                    HttpRequest.sendPost(url, params);
+                } catch (Exception e) {
                     e.printStackTrace();
-                }finally {
+                } finally {
                     StaticVariableUtils.authNodeListMap.clear();
                 }
 
@@ -257,38 +260,39 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     /**
      * 迁移主控
+     * 
      * @param newMasterIp
      */
-    private void migrateMaster(String newMasterIp){
+    private void migrateMaster(String newMasterIp) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
-                    String url= QuerySysAuth.getAuthAddress();
-                    String params="func=changeMasterIp&new_master_ip="+newMasterIp;
-                    String  res= HttpRequest.sendPost(url,params);
+                try {
+                    String url = QuerySysAuth.getAuthAddress();
+                    String params = "func=changeMasterIp&new_master_ip=" + newMasterIp;
+                    String res = HttpRequest.sendPost(url, params);
                     logger.info(res);
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                }finally {
+                } finally {
                     StaticVariableUtils.authNodeListMap.clear();
                 }
             }
         }).start();
     }
 
-    private NodeVersionVo getVersionObj(String v){
-        NodeVersionVo vo =new NodeVersionVo();
-        if (StringUtils.isNotBlank(v)){
-            //"1.27|{\"nginx_version\":\"1.19.9\",\"ants_waf\":\"2.30\"}"
-            String[] angentVersionAndNgxAdnWafVersion= v.split("\\|");
+    private NodeVersionVo getVersionObj(String v) {
+        NodeVersionVo vo = new NodeVersionVo();
+        if (StringUtils.isNotBlank(v)) {
+            // "1.27|{\"nginx_version\":\"1.19.9\",\"ants_waf\":\"2.30\"}"
+            String[] angentVersionAndNgxAdnWafVersion = v.split("\\|");
             vo.setAgentVersion(angentVersionAndNgxAdnWafVersion[0]);
-            if (angentVersionAndNgxAdnWafVersion.length>=2){
-                JSONObject object=DataTypeConversionUtil.string2Json(angentVersionAndNgxAdnWafVersion[1]);
-                if (object.containsKey("ants_waf")){
+            if (angentVersionAndNgxAdnWafVersion.length >= 2) {
+                JSONObject object = DataTypeConversionUtil.string2Json(angentVersionAndNgxAdnWafVersion[1]);
+                if (object.containsKey("ants_waf")) {
                     vo.setNginxWafVersion(object.getString("ants_waf"));
                 }
-                if (object.containsKey("nginx_version")){
+                if (object.containsKey("nginx_version")) {
                     vo.setNginxVersion(object.getString("nginx_version"));
                 }
             }
@@ -297,57 +301,56 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
     }
 
     // 远程获取后更新本地,输出到本
-    private Map<String,Object> getSynRemoteNodeList(){
-        String info=this.getNodeListFromAnts();
-       //logger.debug("getSynRemoteNodeList:"+info);
-        Map<String,Object> ipsMap=new HashMap<>();
-        if(StringUtils.isNotBlank(info)){
-            JSONArray jsonArray=DataTypeConversionUtil.string2JsonArray(info);
-            for (int i = 0; i <jsonArray.size() ; i++) {
-                JSONObject jsonRemoteObject=jsonArray.getJSONObject(i);
-                //ip,goods,version,addtime,endtime
-                if(jsonRemoteObject.containsKey("ip")){
-                    String ip=jsonRemoteObject.getString("ip");
-                    ipsMap.put(ip,jsonRemoteObject);
-                    CdnClientEntity locClient=cdnClientDao.selectOne(new QueryWrapper<CdnClientEntity>()
-                            .eq("client_ip",ip)
-                            .last("limit 1")
-                    );
-                    if(null==locClient){
-                        //Auth 有，local 无
-                        //CdnClientEntity new_client=new CdnClientEntity();
-                        //new_client.setClientIp(ip);
-                        //new_client.setClientType(1);
-                        //insertClientToDb(new_client);
-                        //locClient=new_client;
+    private Map<String, Object> getSynRemoteNodeList() {
+        String info = this.getNodeListFromAnts();
+        // logger.debug("getSynRemoteNodeList:"+info);
+        Map<String, Object> ipsMap = new HashMap<>();
+        if (StringUtils.isNotBlank(info)) {
+            JSONArray jsonArray = DataTypeConversionUtil.string2JsonArray(info);
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject jsonRemoteObject = jsonArray.getJSONObject(i);
+                // ip,goods,version,addtime,endtime
+                if (jsonRemoteObject.containsKey("ip")) {
+                    String ip = jsonRemoteObject.getString("ip");
+                    ipsMap.put(ip, jsonRemoteObject);
+                    CdnClientEntity locClient = cdnClientDao.selectOne(new QueryWrapper<CdnClientEntity>()
+                            .eq("client_ip", ip)
+                            .last("limit 1"));
+                    if (null == locClient) {
+                        // Auth 有，local 无
+                        // CdnClientEntity new_client=new CdnClientEntity();
+                        // new_client.setClientIp(ip);
+                        // new_client.setClientType(1);
+                        // insertClientToDb(new_client);
+                        // locClient=new_client;
                     }
-                    if(null!=locClient){
-                        //Auth 有，local 有
-                        if(StringUtils.isBlank(locClient.getArea()) || StringUtils.isBlank(locClient.getLine())){
+                    if (null != locClient) {
+                        // Auth 有，local 有
+                        if (StringUtils.isBlank(locClient.getArea()) || StringUtils.isBlank(locClient.getLine())) {
                             logger.error("--area or line is empty--");
                             continue;
                         }
                         locClient.setRegInfo(jsonRemoteObject.toJSONString());
-                        if(jsonRemoteObject.containsKey("addtime")){
-                            if(StringUtils.isNotBlank(jsonRemoteObject.getString("addtime"))){
-                                String sDate= DateUtils.stampToDate(jsonRemoteObject.getString("addtime")+"000");
-                                Date s=DateUtils.stringToDate(sDate,DateUtils.DATE_TIME_PATTERN);
+                        if (jsonRemoteObject.containsKey("addtime")) {
+                            if (StringUtils.isNotBlank(jsonRemoteObject.getString("addtime"))) {
+                                String sDate = DateUtils.stampToDate(jsonRemoteObject.getString("addtime") + "000");
+                                Date s = DateUtils.stringToDate(sDate, DateUtils.DATE_TIME_PATTERN);
                                 locClient.setEffectiveStartTime(s);
                             }
                         }
-                        if(jsonRemoteObject.containsKey("endtime")){
-                            if(StringUtils.isNotBlank(jsonRemoteObject.getString("endtime"))){
-                                String eDate= DateUtils.stampToDate(jsonRemoteObject.getString("endtime")+"000");
-                                Date e=DateUtils.stringToDate(eDate,DateUtils.DATE_TIME_PATTERN);
-                                if (null==locClient.getEffectiveEndingTime()){
-                                    //重新启动
+                        if (jsonRemoteObject.containsKey("endtime")) {
+                            if (StringUtils.isNotBlank(jsonRemoteObject.getString("endtime"))) {
+                                String eDate = DateUtils.stampToDate(jsonRemoteObject.getString("endtime") + "000");
+                                Date e = DateUtils.stringToDate(eDate, DateUtils.DATE_TIME_PATTERN);
+                                if (null == locClient.getEffectiveEndingTime()) {
+                                    // 重新启动
                                     restartScan();
-                                    //2023 03 30 取消推送初始化
-                                    //Map pushTaskMap=new HashMap();
-                                    //pushTaskMap.put(PushTypeEnum.INIT_ALL_NODE.getName(),locClient.getId().toString());
-                                    //cdnMakeFileService.pushByInputInfo(pushTaskMap);
+                                    // 2023 03 30 取消推送初始化
+                                    // Map pushTaskMap=new HashMap();
+                                    // pushTaskMap.put(PushTypeEnum.INIT_ALL_NODE.getName(),locClient.getId().toString());
+                                    // cdnMakeFileService.pushByInputInfo(pushTaskMap);
                                 }
-                                if (e.after(new Date())){
+                                if (e.after(new Date())) {
                                     locClient.setEffectiveEndingTime(e);
                                     locClient.setStatus(ClientStatusEnum.ALREADY_REGISTER.getId());
                                 }
@@ -362,92 +365,89 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
         return ipsMap;
     }
 
-
-    private void insertClientToDb(CdnClientEntity client){
+    private void insertClientToDb(CdnClientEntity client) {
         cdnClientDao.insert(client);
-        Map pushMap=new HashMap(4);
-        pushMap.put(PushTypeEnum.NODE_CUSTOM.getName(),client.getId().toString());
+        Map pushMap = new HashMap(4);
+        pushMap.put(PushTypeEnum.NODE_CUSTOM.getName(), client.getId().toString());
         cdnMakeFileService.pushByInputInfo(pushMap);
     }
 
-    private void syncAntsNodeListHandle(){
-            try{
-                //1 远程获取后更新本地,输出到本地\
-                Map<String,Object> ipsMap=new HashMap<>();
-                if (true){
-                    ipsMap.putAll(this.getSynRemoteNodeList());
+    private void syncAntsNodeListHandle() {
+        try {
+            // 1 远程获取后更新本地,输出到本地\
+            Map<String, Object> ipsMap = new HashMap<>();
+            if (true) {
+                ipsMap.putAll(this.getSynRemoteNodeList());
+            }
+            // 2 redis ->ants_agent version更新到本地
+            Set<String> listClient = redisUtils.scanAll("version_*");
+            if (null != listClient) {
+                for (String key : listClient) {
+                    // 1) "version_69.176.94.50"
+                    String cip = key.replace("version_", "");
+                    if (IPUtils.isValidIPV4(cip)) {
+                        Long count = cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>()
+                                .eq("client_ip", cip)
+                                .last("limit 1"));
+                        if (0 == count) {
+                            // 发现新节点
+                            CdnClientEntity client = new CdnClientEntity();
+                            client.setClientIp(cip);
+                            client.setStatus(ClientStatusEnum.UNKNOWN.getId());
+                            client.setClientType(1);
+                            client.setStableScore(0);
+                            client.setRegInfo(null);
+                            String v = redisUtils.get(key);
+                            if (StringUtils.isNotBlank(v)) {
+                                NodeVersionVo vo = getVersionObj(v);
+                                client.setAgentVersion(vo.getAgentVersion());
+                                client.setNgxVersion(vo.getNginxVersion());
+                                client.setVersion(vo.getNginxWafVersion());
+                                client.setOs_name(vo.getSystemOsName());
+                            }
+                            insertClientToDb(client);
+                            restartScan();
+                        }
+                    }
                 }
-                //2 redis ->ants_agent version更新到本地
-                Set<String> listClient= redisUtils.scanAll("version_*");
-                if (null!=listClient){
-                    for (String key: listClient){
-                        //1) "version_69.176.94.50"
-                        String cip=key.replace("version_","");
-                        if (IPUtils.isValidIPV4(cip)){
-                            Integer count=cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>()
-                                    .eq("client_ip",cip)
-                                    .last("limit 1")
-                            );
-                            if (0==count){
-                                //发现新节点
-                                CdnClientEntity client=new CdnClientEntity();
-                                client.setClientIp(cip);
-                                client.setStatus(ClientStatusEnum.UNKNOWN.getId());
-                                client.setClientType(1);
-                                client.setStableScore(0);
-                                client.setRegInfo(null);
-                                String v=redisUtils.get(key);
-                                if (StringUtils.isNotBlank(v)){
-                                    NodeVersionVo vo= getVersionObj(v);
-                                    client.setAgentVersion(vo.getAgentVersion());
-                                    client.setNgxVersion(vo.getNginxVersion());
-                                    client.setVersion(vo.getNginxWafVersion());
-                                    client.setOs_name(vo.getSystemOsName());
-                                }
-                                insertClientToDb(client);
-                                restartScan();
+            }
+
+            // 3 本地与远程对比
+            List<CdnClientEntity> list = cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
+                    .isNull("parent_id"));
+            for (CdnClientEntity client : list) {
+                if (!ipsMap.containsKey(client.getClientIp())) {
+                    logger.error("sign auth servers not fount client:" + client.getClientIp());
+                    // 授权服务器无此数据
+                    // client.setStatus(ClientStatusEnum.REMOTE_EMPTY.getId());
+                    // client.setEffectiveStartTime(null);
+                    // client.setEffectiveEndingTime(null);
+                    // client.setRegInfo(null);
+                    // cdnClientDao.updateById(client);
+                } else {
+                    // 授权服务器存在 对比版本 更新本地版本到远程
+                    JSONObject r_object = (JSONObject) ipsMap.get(client.getClientIp());
+                    if (null != r_object && r_object.containsKey("version")) {
+                        String r_version = r_object.getString("version");
+                        String l_version = client.getVersion();
+                        if (StringUtils.isNotBlank(l_version)) {
+                            if (!r_version.equals(l_version)) {
+                                this.updateRemoteVersion(client.getClientIp(), l_version);
                             }
                         }
                     }
                 }
-
-                //3 本地与远程对比
-                List<CdnClientEntity> list=cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
-                        .isNull("parent_id"));
-                for (CdnClientEntity client:list){
-                    if(!ipsMap.containsKey(client.getClientIp())){
-                        logger.error("sign auth servers not fount client:"+client.getClientIp());
-                        //授权服务器无此数据
-                        //client.setStatus(ClientStatusEnum.REMOTE_EMPTY.getId());
-                        //client.setEffectiveStartTime(null);
-                        //client.setEffectiveEndingTime(null);
-                        //client.setRegInfo(null);
-                        //cdnClientDao.updateById(client);
-                    }else{
-                        //授权服务器存在 对比版本 更新本地版本到远程
-                        JSONObject r_object=(JSONObject)ipsMap.get(client.getClientIp());
-                        if(null!=r_object && r_object.containsKey("version")){
-                            String r_version=r_object.getString("version");
-                            String l_version=client.getVersion();
-                            if(StringUtils.isNotBlank(l_version)){
-                                if(!r_version.equals(l_version)){
-                                    this.updateRemoteVersion(client.getClientIp(),l_version);
-                                }
-                            }
-                        }
-                    }
-                }
-
-            }
-            catch (Exception e){
-                e.printStackTrace();
             }
 
-          StaticVariableUtils.syncNodeInfoThread=false;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        StaticVariableUtils.syncNodeInfoThread = false;
     }
 
-    private void SyncAntsNodeListThread(){
-        if(StaticVariableUtils.syncNodeInfoThread){
+    private void SyncAntsNodeListThread() {
+        if (StaticVariableUtils.syncNodeInfoThread) {
             return;
         }
         new Thread(new Runnable() {
@@ -459,78 +459,74 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
     }
 
     /**
-     *  获取授权节点列表
+     * 获取授权节点列表
      */
     @Override
     public R syncFlushAuthList() {
-        if(StaticVariableUtils.syncNodeInfoThread){
+        if (StaticVariableUtils.syncNodeInfoThread) {
             return R.error("同步中,请稍侯！");
         }
-        //更新本地PrometheusConf
-        //this.updatePrometheusConf();
-        //同步节点
+        // 更新本地PrometheusConf
+        // this.updatePrometheusConf();
+        // 同步节点
         this.SyncAntsNodeListThread();
         return R.ok();
     }
 
-
     /**
      * 更新本地 Prometheus 配置文件！
      */
-    private void updatePrometheusConf(){
-        final String confDir="/usr/ants/prome/config/";
-        final String[] confList={"info","sts","vts"};
-        List<CdnClientEntity> clientList=cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
-                .eq("client_type",1)
-                .select("client_ip")
-        );
-        List<String> clientIpList=clientList.stream().map(t->t.getClientIp()).collect(Collectors.toList());
-        JSONArray clientArray=new JSONArray();
-        for (String clientIp: clientIpList){
-            clientArray.add(clientIp+":8181");
+    private void updatePrometheusConf() {
+        final String confDir = "/usr/ants/prome/config/";
+        final String[] confList = { "info", "sts", "vts" };
+        List<CdnClientEntity> clientList = cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
+                .eq("client_type", 1)
+                .select("client_ip"));
+        List<String> clientIpList = clientList.stream().map(t -> t.getClientIp()).collect(Collectors.toList());
+        JSONArray clientArray = new JSONArray();
+        for (String clientIp : clientIpList) {
+            clientArray.add(clientIp + ":8181");
         }
-        for (String file:confList){
-            String path=confDir+file+".json";
-            JSONObject labels_obj=new JSONObject();
-            labels_obj.put("project_name",file);
-            JSONArray fileArray=new JSONArray();
-            JSONObject fileObj=new JSONObject();
-            fileObj.put("targets",clientArray);
-            fileObj.put("labels",labels_obj);
+        for (String file : confList) {
+            String path = confDir + file + ".json";
+            JSONObject labels_obj = new JSONObject();
+            labels_obj.put("project_name", file);
+            JSONArray fileArray = new JSONArray();
+            JSONObject fileObj = new JSONObject();
+            fileObj.put("targets", clientArray);
+            fileObj.put("labels", labels_obj);
             fileArray.add(fileObj);
             try {
-                File t_file=new File(path);
-                if (t_file.exists()){
+                File t_file = new File(path);
+                if (t_file.exists()) {
                     BufferedWriter out = new BufferedWriter(new FileWriter(path));
                     out.write(fileArray.toJSONString());
                     out.close();
-                }else{
-                    //pass
+                } else {
+                    // pass
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
         }
     }
 
-
-
-
     /**
      * 保存节点【主控添加节点】
+     * 
      * @param form
      * @return
      */
     @Override
     public CdnClientEntity SaveByMainControl(CdnClientForm form) {
-        if(null!=form.getId()){
-            CdnClientEntity tClient= cdnClientDao.selectById(form.getId());
-            if(null!=tClient){
-                //update
-                if (StringUtils.isNotBlank(tClient.getRegInfo())){
-                    //已注册成功节点不可修改分组
-                    if (!form.getAreaId().equals(tClient.getAreaId())){
+        if (null != form.getId()) {
+            CdnClientEntity tClient = cdnClientDao.selectById(form.getId());
+            if (null != tClient) {
+                // update
+                if (StringUtils.isNotBlank(tClient.getRegInfo())) {
+                    // 已注册成功节点不可修改分组
+                    if (!form.getAreaId().equals(tClient.getAreaId())) {
                         throw new RuntimeException("已注册成功节点不可修改节点分组");
                     }
                 }
@@ -542,31 +538,30 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
                 tClient.setRemark(form.getRemark());
                 tClient.setClientInfo(form.getClientInfo());
                 tClient.setStableScore(0);
-                if (null!=form.getClientType() && 1==form.getClientType()){
-                    redisUtils.longSet(form.getClientIp()+"_groupId",form.getAreaId());
-                    StaticVariableUtils.clientIpIdGroupMap.put(tClient.getId(),form.getAreaId().toString());
+                if (null != form.getClientType() && 1 == form.getClientType()) {
+                    redisUtils.longSet(form.getClientIp() + "_groupId", form.getAreaId());
+                    StaticVariableUtils.clientIpIdGroupMap.put(tClient.getId(), form.getAreaId().toString());
                 }
                 cdnClientDao.updateById(tClient);
                 this.updateNodeIpList();
-                //同步节点
+                // 同步节点
                 this.SyncAntsNodeListThread();
-                return  tClient;
+                return tClient;
             }
         }
-        //其它情况添加 insert cdn22.cdn_client.client_ip
-        String ip=form.getClientIp();
-        CdnClientEntity t2_client=cdnClientDao.selectOne(new QueryWrapper<CdnClientEntity>()
-                .eq("client_ip",ip)
-                .last(" limit 1")
-        );
-        if(null!=t2_client){
-            throw new RRException("ip["+ip+"]节点存在！");
+        // 其它情况添加 insert cdn22.cdn_client.client_ip
+        String ip = form.getClientIp();
+        CdnClientEntity t2_client = cdnClientDao.selectOne(new QueryWrapper<CdnClientEntity>()
+                .eq("client_ip", ip)
+                .last(" limit 1"));
+        if (null != t2_client) {
+            throw new RRException("ip[" + ip + "]节点存在！");
         }
-        CdnClientEntity client=new CdnClientEntity();
+        CdnClientEntity client = new CdnClientEntity();
         client.setClientIp(form.getClientIp());
-        //client.setClientIp2(form.getClientIp2());
-        //client.setRedisPort(form.getRedisPort());
-        //client.setRedisAuth(form.getRedisAuth());
+        // client.setClientIp2(form.getClientIp2());
+        // client.setRedisPort(form.getRedisPort());
+        // client.setRedisAuth(form.getRedisAuth());
         client.setClientInfo(form.getClientInfo());
         client.setStableScore(0);
         insertClientToDb(client);
@@ -576,184 +571,196 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
         return client;
     }
 
-    private void nodePushInfosV2Thread(CdnClientEntity client){
-        if (StaticVariableUtils.pushCallBackErrorThread.containsKey(client.getClientIp()) &&  StaticVariableUtils.pushCallBackErrorThread.get(client.getClientIp())){
-            return ;
+    private void nodePushInfosV2Thread(CdnClientEntity client) {
+        if (StaticVariableUtils.pushCallBackErrorThread.containsKey(client.getClientIp())
+                && StaticVariableUtils.pushCallBackErrorThread.get(client.getClientIp())) {
+            return;
         }
-        StaticVariableUtils.pushCallBackErrorThread.put(client.getClientIp(),true);
+        StaticVariableUtils.pushCallBackErrorThread.put(client.getClientIp(), true);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
-                    NodePushStreamFeedBackInfoVo rVo=new NodePushStreamFeedBackInfoVo();
+                try {
+                    NodePushStreamFeedBackInfoVo rVo = new NodePushStreamFeedBackInfoVo();
                     rVo.setCode(200);
                     rVo.setMsg("推送完毕");
                     rVo.setError_info("");
-                    //1 获取流长度
-                    Long streamSize=0L;
-                    List<String> pushTypes= RedisStreamType.getAllXadd();
-                    for (String name:pushTypes){
-                        String streamName=client.getClientIp()+name;
-                        long ss=redisUtils.streamSize(streamName);
-                        streamSize+=ss;
-                        //streamSize+=redisUtils.StreamSizeV2(streamName);
-                        if (ss>0l){
-                            rVo.setSn( rVo.getSn()+"|"+streamName+"("+ss+")");
+                    // 1 获取流长度
+                    Long streamSize = 0L;
+                    List<String> pushTypes = RedisStreamType.getAllXadd();
+                    for (String name : pushTypes) {
+                        String streamName = client.getClientIp() + name;
+                        long ss = redisUtils.streamSize(streamName);
+                        streamSize += ss;
+                        // streamSize+=redisUtils.StreamSizeV2(streamName);
+                        if (ss > 0l) {
+                            rVo.setSn(rVo.getSn() + "|" + streamName + "(" + ss + ")");
                         }
-                        //map.put(name,redisUtils.streamRead(streamName));
+                        // map.put(name,redisUtils.streamRead(streamName));
                     }
-                    if(0L!=streamSize){
+                    if (0L != streamSize) {
                         rVo.setCode(100);
                         rVo.setMsg("推送中");
                         rVo.setXLen(streamSize);
                         rVo.setError_info("");
                     }
-                    StaticVariableUtils.pushCallBackMap.put(client.getClientIp(),rVo);
+                    StaticVariableUtils.pushCallBackMap.put(client.getClientIp(), rVo);
 
-                    //2 获取错误信息
-                    List<MapRecord<String, Object, Object>> objList=getSteamFeedbackInfo(client);
-                    //map.put("feedback",objList);
+                    // 2 获取错误信息
+                    List<MapRecord<String, Object, Object>> objList = getSteamFeedbackInfo(client);
+                    // map.put("feedback",objList);
 
-                    //3 ERROR
-                    if(objList.size()>0){
-                        for ( MapRecord<String, Object, Object> LastError:objList){
-                            Map<Object,Object>valMap= LastError.getValue();
-                            if(valMap.containsKey("module") && valMap.containsKey("config") && valMap.containsKey("info")){
-                                String config=valMap.get("config").toString();
-                                if ("error".equals(config) || "success".equals(config)){
-                                    valMap.put("xid",LastError.getId());
-                                    StaticVariableUtils.pushCallBackErrorMap.put(client.getClientIp(),valMap);
+                    // 3 ERROR
+                    if (objList.size() > 0) {
+                        for (MapRecord<String, Object, Object> LastError : objList) {
+                            Map<Object, Object> valMap = LastError.getValue();
+                            if (valMap.containsKey("module") && valMap.containsKey("config")
+                                    && valMap.containsKey("info")) {
+                                String config = valMap.get("config").toString();
+                                if ("error".equals(config) || "success".equals(config)) {
+                                    valMap.put("xid", LastError.getId());
+                                    StaticVariableUtils.pushCallBackErrorMap.put(client.getClientIp(), valMap);
                                     break;
                                 }
                             }
                         }
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                }finally {
-                    StaticVariableUtils.pushCallBackErrorThread.put(client.getClientIp(),false);
+                } finally {
+                    StaticVariableUtils.pushCallBackErrorThread.put(client.getClientIp(), false);
                 }
             }
         }).start();
 
     }
 
-
-    private void nodeFeedBackV3Thread(CdnClientEntity client){
-        if (StaticVariableUtils.pushCallBackMap.containsKey(client.getClientIp())){
+    private void nodeFeedBackV3Thread(CdnClientEntity client) {
+        if (StaticVariableUtils.pushCallBackMap.containsKey(client.getClientIp())) {
             client.setPushInfo(StaticVariableUtils.pushCallBackMap.get(client.getClientIp()));
         }
-        if (StaticVariableUtils.lastSendXAddTaskStreamIdMap.containsKey(client.getClientIp())){
-            String date=StaticVariableUtils.lastSendXAddTaskStreamIdMap.get(client.getClientIp());
+        if (StaticVariableUtils.lastSendXAddTaskStreamIdMap.containsKey(client.getClientIp())) {
+            String date = StaticVariableUtils.lastSendXAddTaskStreamIdMap.get(client.getClientIp());
             client.setLastPushStreamId(date);
         }
-        if(StaticVariableUtils.pushCallBackErrorMap.containsKey(client.getClientIp())){
+        if (StaticVariableUtils.pushCallBackErrorMap.containsKey(client.getClientIp())) {
             client.setPushResult(StaticVariableUtils.pushCallBackErrorMap.get(client.getClientIp()));
         }
-        if (StaticVariableUtils.pushCallBackErrorThread.containsKey(client.getClientIp()) &&  StaticVariableUtils.pushCallBackErrorThread.get(client.getClientIp())){
-            return ;
+        if (StaticVariableUtils.pushCallBackErrorThread.containsKey(client.getClientIp())
+                && StaticVariableUtils.pushCallBackErrorThread.get(client.getClientIp())) {
+            return;
         }
-        StaticVariableUtils.pushCallBackErrorThread.put(client.getClientIp(),true);
+        StaticVariableUtils.pushCallBackErrorThread.put(client.getClientIp(), true);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
-                    String key=String.format("%s-feedback",client.getClientIp());
-                    PushResultVo rVo=new PushResultVo();
-                    String v=  redisUtils.get(key);
-                    if (StringUtils.isBlank(v)){
-                        StaticVariableUtils.pushCallBackErrorMap.put(client.getClientIp(),"");
-                    }else{
-                        //{\"time\":1725332707,\"msg\":\"nginx: the configuration file /home/local/nginx/conf/nginx.conf syntax is ok\\nnginx: configuration file /home/local/nginx/conf/nginx.conf test is successful\\n\"}"
-                        JSONObject redsMsg=DataTypeConversionUtil.string2Json(v);
-                        if(redsMsg.containsKey("time") && redsMsg.containsKey("msg")){
-                            //nginx: [emerg] cannot load certificate key "/home/local/nginx/conf/conf/ssl/9075_cdntest.my1314.asia_.key": BIO_new_file() failed (SSL: error:02001002:system library:fopen:No such file or directory:fopen('/home/local/nginx/conf/conf/ssl/9075_cdntest.my1314.asia_.key','r') error:2006D080:BIO routines:BIO_new_file:no such file)
-                            //nginx: configuration file /home/local/nginx/conf/nginx.conf test failed
+                try {
+                    String key = String.format("%s-feedback", client.getClientIp());
+                    PushResultVo rVo = new PushResultVo();
+                    String v = redisUtils.get(key);
+                    if (StringUtils.isBlank(v)) {
+                        StaticVariableUtils.pushCallBackErrorMap.put(client.getClientIp(), "");
+                    } else {
+                        // {\"time\":1725332707,\"msg\":\"nginx: the configuration file
+                        // /home/local/nginx/conf/nginx.conf syntax is ok\\nnginx: configuration file
+                        // /home/local/nginx/conf/nginx.conf test is successful\\n\"}"
+                        JSONObject redsMsg = DataTypeConversionUtil.string2Json(v);
+                        if (redsMsg.containsKey("time") && redsMsg.containsKey("msg")) {
+                            // nginx: [emerg] cannot load certificate key
+                            // "/home/local/nginx/conf/conf/ssl/9075_cdntest.my1314.asia_.key":
+                            // BIO_new_file() failed (SSL: error:02001002:system library:fopen:No such file
+                            // or
+                            // directory:fopen('/home/local/nginx/conf/conf/ssl/9075_cdntest.my1314.asia_.key','r')
+                            // error:2006D080:BIO routines:BIO_new_file:no such file)
+                            // nginx: configuration file /home/local/nginx/conf/nginx.conf test failed
 
-                            //nginx: the configuration file /home/local/nginx/conf/nginx.conf syntax is ok
-                            //nginx: configuration file /home/local/nginx/conf/nginx.conf test is successful
-                            String ngxFeedBackMsg=redsMsg.getString("msg");
-                            if( ngxFeedBackMsg.contains("/home/local/nginx/conf/nginx.conf test is successful")){
+                            // nginx: the configuration file /home/local/nginx/conf/nginx.conf syntax is ok
+                            // nginx: configuration file /home/local/nginx/conf/nginx.conf test is
+                            // successful
+                            String ngxFeedBackMsg = redsMsg.getString("msg");
+                            if (ngxFeedBackMsg.contains("/home/local/nginx/conf/nginx.conf test is successful")) {
                                 rVo.setConfig("success");
                                 rVo.setInfo(ngxFeedBackMsg);
-                            }else{
+                            } else {
                                 rVo.setConfig("failure");
                                 rVo.setInfo(ngxFeedBackMsg);
                             }
-                            int time=redsMsg.getInteger("time");
-                            Date date=DateUtils.stamp2date(time);
-                            String dateStr=DateUtils.format(date,DateUtils.DATE_TIME_PATTERN);
+                            int time = redsMsg.getInteger("time");
+                            Date date = DateUtils.stamp2date(time);
+                            String dateStr = DateUtils.format(date, DateUtils.DATE_TIME_PATTERN);
                             rVo.setPublish(dateStr);
-                            StaticVariableUtils.pushCallBackErrorMap.put(client.getClientIp(),rVo);
-                            StaticVariableUtils.lastSendXAddTaskStreamIdMap.put(client.getClientIp(),redsMsg.getInteger("time").toString());
-                        }else{
-                            StaticVariableUtils.pushCallBackErrorMap.put(client.getClientIp(),"");
+                            StaticVariableUtils.pushCallBackErrorMap.put(client.getClientIp(), rVo);
+                            StaticVariableUtils.lastSendXAddTaskStreamIdMap.put(client.getClientIp(),
+                                    redsMsg.getInteger("time").toString());
+                        } else {
+                            StaticVariableUtils.pushCallBackErrorMap.put(client.getClientIp(), "");
                         }
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                }finally {
-                    StaticVariableUtils.pushCallBackErrorThread.put(client.getClientIp(),false);
+                } finally {
+                    StaticVariableUtils.pushCallBackErrorThread.put(client.getClientIp(), false);
                 }
             }
         }).start();
     }
 
-    private  List<MapRecord<String, Object, Object>>  getSteamFeedbackInfo(CdnClientEntity client){
-        List<MapRecord<String, Object, Object>>  list= redisUtils.streamReadLimitSize(client.getClientIp()+":feedback-stream",StaticVariableUtils.maxFeedBackInfoSize);
+    private List<MapRecord<String, Object, Object>> getSteamFeedbackInfo(CdnClientEntity client) {
+        List<MapRecord<String, Object, Object>> list = redisUtils.streamReadLimitSize(
+                client.getClientIp() + ":feedback-stream", StaticVariableUtils.maxFeedBackInfoSize);
         return list;
     }
 
-
-    private String getClientAreaName(int areaId){
-        if(0==areaId){
+    private String getClientAreaName(int areaId) {
+        if (0 == areaId) {
             return "默认";
         }
-        if (StaticVariableUtils.clientAreaIdNameMap.contains(areaId)){
+        if (StaticVariableUtils.clientAreaIdNameMap.contains(areaId)) {
             return StaticVariableUtils.clientAreaIdNameMap.get(areaId);
         }
-        CdnClientAreaEntity areaEntity=cdnClientAreaDao.selectById(areaId);
-        if (null!=areaEntity){
-            StaticVariableUtils.clientAreaIdNameMap.put(areaId,areaEntity.getName());
+        CdnClientAreaEntity areaEntity = cdnClientAreaDao.selectById(areaId);
+        if (null != areaEntity) {
+            StaticVariableUtils.clientAreaIdNameMap.put(areaId, areaEntity.getName());
             return areaEntity.getName();
-        }else{
-            StaticVariableUtils.clientAreaIdNameMap.put(areaId,"--");
+        } else {
+            StaticVariableUtils.clientAreaIdNameMap.put(areaId, "--");
         }
         return "--";
     }
 
-
     /**
      * 分页 节点列表
+     * 
      * @param param
      * @return
      */
     @Override
     public PageUtils nodePageList(CdnClientQueryForm param) {
-        List<Integer> groupIds=new ArrayList<>(128);
-        if (null!=param.getGroup_id() && 0!=param.getGroup_id()){
-            List<CdnClientGroupChildConfEntity> gList= groupChildConfDao.selectList(new QueryWrapper<CdnClientGroupChildConfEntity>().eq("group_id",param.getGroup_id()).select("client_id"));
-            if (!gList.isEmpty()){
-                groupIds.addAll(gList.stream().map(o->o.getClientId()).collect(Collectors.toList()));
-            }else{
+        List<Integer> groupIds = new ArrayList<>(128);
+        if (null != param.getGroup_id() && 0 != param.getGroup_id()) {
+            List<CdnClientGroupChildConfEntity> gList = groupChildConfDao
+                    .selectList(new QueryWrapper<CdnClientGroupChildConfEntity>().eq("group_id", param.getGroup_id())
+                            .select("client_id"));
+            if (!gList.isEmpty()) {
+                groupIds.addAll(gList.stream().map(o -> o.getClientId()).collect(Collectors.toList()));
+            } else {
                 groupIds.add(-1);
             }
         }
-        List<Integer> childClientIds=new ArrayList<>();
-        List<Integer>parentIds=new ArrayList<>();
-        if (StringUtils.isNotBlank(param.getIp())){
-            List<CdnClientEntity> clients=cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
-                    .like("client_ip", param.getIp())
-            );
-            if (clients.isEmpty()){
+        List<Integer> childClientIds = new ArrayList<>();
+        List<Integer> parentIds = new ArrayList<>();
+        if (StringUtils.isNotBlank(param.getIp())) {
+            List<CdnClientEntity> clients = cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
+                    .like("client_ip", param.getIp()));
+            if (clients.isEmpty()) {
                 childClientIds.add(-1);
                 parentIds.add(-1);
-            }else{
-                for (CdnClientEntity client:clients){
-                    if (null!=client.getParentId()){
+            } else {
+                for (CdnClientEntity client : clients) {
+                    if (null != client.getParentId()) {
                         parentIds.add(client.getParentId());
                         childClientIds.add(client.getId());
-                    }else{
+                    } else {
                         parentIds.add(client.getId());
                     }
                 }
@@ -761,24 +768,26 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
         }
 
         IPage<CdnClientEntity> itemPage = cdnClientDao.selectPage(
-                new Page<CdnClientEntity>(param.getPage(),param.getLimit()),
+                new Page<CdnClientEntity>(param.getPage(), param.getLimit()),
                 new QueryWrapper<CdnClientEntity>()
-                        .and(q->q.isNull(parentIds.isEmpty(),"parent_id").or().in(!parentIds.isEmpty(),"id",parentIds))
-                        .in(!groupIds.isEmpty(),"id",groupIds)
-                        .eq(null!=param.getStableScoreStatus() && 0==param.getStableScoreStatus(),"stable_score",0)
-                        .between(null!=param.getStableScoreStatus() && 1==param.getStableScoreStatus(),"stable_score",0,10)
-                        .gt(null!=param.getStableScoreStatus() && 2==param.getStableScoreStatus(),"stable_score",10)
-                        .eq(null!=param.getClientType(),"client_type",param.getClientType())
-                        .eq(null!=param.getAreaId(),"area_id",param.getAreaId())
-                        .orderByDesc("id")
-        );
-        itemPage.getRecords().forEach(item->{
-            List<CdnClientEntity> list=cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
-                    .eq("parent_id",item.getId())
+                        .and(q -> q.isNull(parentIds.isEmpty(), "parent_id").or().in(!parentIds.isEmpty(), "id",
+                                parentIds))
+                        .in(!groupIds.isEmpty(), "id", groupIds)
+                        .eq(null != param.getStableScoreStatus() && 0 == param.getStableScoreStatus(), "stable_score",
+                                0)
+                        .between(null != param.getStableScoreStatus() && 1 == param.getStableScoreStatus(),
+                                "stable_score", 0, 10)
+                        .gt(null != param.getStableScoreStatus() && 2 == param.getStableScoreStatus(), "stable_score",
+                                10)
+                        .eq(null != param.getClientType(), "client_type", param.getClientType())
+                        .eq(null != param.getAreaId(), "area_id", param.getAreaId())
+                        .orderByDesc("id"));
+        itemPage.getRecords().forEach(item -> {
+            List<CdnClientEntity> list = cdnClientDao.selectList(new QueryWrapper<CdnClientEntity>()
+                    .eq("parent_id", item.getId())
                     .select("id,client_ip,client_ip2,stable_score,reg_info")
-                    .in(!childClientIds.isEmpty(),"id",childClientIds)
-            );
-            list.forEach(item2->{
+                    .in(!childClientIds.isEmpty(), "id", childClientIds));
+            list.forEach(item2 -> {
                 item2.setArea(item.getArea());
                 item2.setLine(item.getLine());
                 item2.setRemark(item.getRemark());
@@ -787,42 +796,42 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
             });
             item.setChildBackupIpList(list);
 
-            //获取节点推送状态线程
-            if (false){
+            // 获取节点推送状态线程
+            if (false) {
                 nodePushInfosV2Thread(item);
 
-                if(StaticVariableUtils.pushCallBackMap.containsKey(item.getClientIp())){
+                if (StaticVariableUtils.pushCallBackMap.containsKey(item.getClientIp())) {
                     item.setPushInfo(StaticVariableUtils.pushCallBackMap.get(item.getClientIp()));
                 }
-                if(StaticVariableUtils.pushCallBackErrorMap.containsKey(item.getClientIp())){
+                if (StaticVariableUtils.pushCallBackErrorMap.containsKey(item.getClientIp())) {
                     item.setPushResult(StaticVariableUtils.pushCallBackErrorMap.get(item.getClientIp()));
                 }
-                if (StaticVariableUtils.lastSendXAddTaskStreamIdMap.containsKey(item.getClientIp())){
-                    String tId=StaticVariableUtils.lastSendXAddTaskStreamIdMap.get(item.getClientIp());
-                    String[] ti=tId.split("-");
-                    String date=DateUtils.stampToDate(ti[0]);
+                if (StaticVariableUtils.lastSendXAddTaskStreamIdMap.containsKey(item.getClientIp())) {
+                    String tId = StaticVariableUtils.lastSendXAddTaskStreamIdMap.get(item.getClientIp());
+                    String[] ti = tId.split("-");
+                    String date = DateUtils.stampToDate(ti[0]);
                     item.setLastPushStreamId(date);
                 }
             }
             nodeFeedBackV3Thread(item);
 
-
-            //2023 03 16 groupInfo
-            if (null==item.getAreaId() ){
-                 item.setAreaId(0);
-                 cdnClientDao.update(null,new UpdateWrapper<CdnClientEntity>().set("area_id",0).eq("id",item.getId()));
-                 item.setAreaName("默认");
-                 redisUtils.longSet(item.getClientIp()+"_groupId","0");
-                 if (  StringUtils.isNotBlank(item.getRegInfo())){
-                     if (!StaticVariableUtils.clientIpIdGroupMap.containsKey(item.getId())){
-                         StaticVariableUtils.clientIpIdGroupMap.put(item.getId(),"0");
-                     }
-                 }
-            }else{
-                if (StringUtils.isNotBlank(item.getRegInfo())){
-                    redisUtils.longSet(item.getClientIp()+"_groupId",item.getAreaId().toString());
-                    if (!StaticVariableUtils.clientIpIdGroupMap.containsKey(item.getId())){
-                        StaticVariableUtils.clientIpIdGroupMap.put(item.getId(),item.getAreaId().toString());
+            // 2023 03 16 groupInfo
+            if (null == item.getAreaId()) {
+                item.setAreaId(0);
+                cdnClientDao.update(null,
+                        new UpdateWrapper<CdnClientEntity>().set("area_id", 0).eq("id", item.getId()));
+                item.setAreaName("默认");
+                redisUtils.longSet(item.getClientIp() + "_groupId", "0");
+                if (StringUtils.isNotBlank(item.getRegInfo())) {
+                    if (!StaticVariableUtils.clientIpIdGroupMap.containsKey(item.getId())) {
+                        StaticVariableUtils.clientIpIdGroupMap.put(item.getId(), "0");
+                    }
+                }
+            } else {
+                if (StringUtils.isNotBlank(item.getRegInfo())) {
+                    redisUtils.longSet(item.getClientIp() + "_groupId", item.getAreaId().toString());
+                    if (!StaticVariableUtils.clientIpIdGroupMap.containsKey(item.getId())) {
+                        StaticVariableUtils.clientIpIdGroupMap.put(item.getId(), item.getAreaId().toString());
                     }
                 }
                 item.setAreaName(getClientAreaName(item.getAreaId()));
@@ -835,8 +844,8 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     @Override
     public Object feedbackInfo(Integer clientId) {
-        CdnClientEntity client=cdnClientDao.selectById(clientId);
-        if(null==client){
+        CdnClientEntity client = cdnClientDao.selectById(clientId);
+        if (null == client) {
             return null;
         }
         return this.getSteamFeedbackInfo(client);
@@ -844,252 +853,255 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     @Override
     public void deleteAllFeedback(Integer clientId) {
-        CdnClientEntity client=cdnClientDao.selectById(clientId);
-        if(null!=client){
-          redisUtils.delete(client.getClientIp()+":feedback-stream");
+        CdnClientEntity client = cdnClientDao.selectById(clientId);
+        if (null != client) {
+            redisUtils.delete(client.getClientIp() + ":feedback-stream");
         }
     }
-
 
     /**
      * 对反馈信息进行处理
      */
     @Override
     public Object operaFeeds(Integer index) {
-        if(null==index){return null;}
-        Map<String,String> result=new LinkedHashMap<>();
-        final String SitePathM="home/local/nginx/conf/conf/site/";
-        final String StreamProxyPathM="/home/local/nginx/conf/conf/forward/";
-        final String SSLPathM="/home/local/nginx/conf/conf/ssl/ssl_";
-        final  String commandM="command:normal";
+        if (null == index) {
+            return null;
+        }
+        Map<String, String> result = new LinkedHashMap<>();
+        final String SitePathM = "home/local/nginx/conf/conf/site/";
+        final String StreamProxyPathM = "/home/local/nginx/conf/conf/forward/";
+        final String SSLPathM = "/home/local/nginx/conf/conf/ssl/ssl_";
+        final String commandM = "command:normal";
         final String errorPattern = "nginx.*\\stest\\sfailed.*";
-        final String successPatter="nginx.*\\stest\\sis\\ssuccessful.*";
+        final String successPatter = "nginx.*\\stest\\sis\\ssuccessful.*";
         Pattern r_error = Pattern.compile(errorPattern);
         Pattern r_success = Pattern.compile(successPatter);
-        //"1652864515293-0": "119.97.137.47|/home/local/nginx/conf/nginx.conf|1",
-        Iterator<Map.Entry<String, Object>> entries =StaticVariableUtils.alreadyPushTaskRecordMap.entrySet().iterator();
+        // "1652864515293-0": "119.97.137.47|/home/local/nginx/conf/nginx.conf|1",
+        Iterator<Map.Entry<String, Object>> entries = StaticVariableUtils.alreadyPushTaskRecordMap.entrySet()
+                .iterator();
         while (entries.hasNext()) {
             Map.Entry<String, Object> entry = entries.next();
             String key = entry.getKey();
-            //将超过10分钟的清除
-            String temp=key.replaceAll("-\\d+","");
-            Long L_temp=Long.parseLong(temp);
-            if(System.currentTimeMillis()-L_temp>10*60*1000){
+            // 将超过10分钟的清除
+            String temp = key.replaceAll("-\\d+", "");
+            Long L_temp = Long.parseLong(temp);
+            if (System.currentTimeMillis() - L_temp > 10 * 60 * 1000) {
                 entries.remove();
                 continue;
             }
             String mapValue = entry.getValue().toString();
-            String[] value_s=mapValue.split("\\|");
-            //logger.debug(mapValue);
-            //数据格式错误的清除
-            if(value_s.length<3){
+            String[] value_s = mapValue.split("\\|");
+            // logger.debug(mapValue);
+            // 数据格式错误的清除
+            if (value_s.length < 3) {
                 entries.remove();
                 continue;
             }
-            if(  isInteger(value_s[2])){
-                Integer thisIndex=Integer.parseInt(value_s[2]) ;
-                if(!index.equals(thisIndex)){
+            if (isInteger(value_s[2])) {
+                Integer thisIndex = Integer.parseInt(value_s[2]);
+                if (!index.equals(thisIndex)) {
                     continue;
                 }
-            }else{
+            } else {
                 continue;
             }
-            String path=value_s[1];
-            //logger.debug(path);
-            Integer siteI=path.indexOf(SitePathM);
-            Integer streamI=path.indexOf(StreamProxyPathM);
-            Integer sslI=path.indexOf(SSLPathM);
-            if(-1!=siteI || -1!=streamI || -1!=sslI) {
-                //处理站点反馈
-                String labelName="";
-                if (-1!=siteI){
-                    String idp= path.replace(SitePathM,"");
-                    idp=idp.replace("_.conf","");
-                    idp=idp.replace("/","");
-                    if (StringUtils.isBlank(idp)){
+            String path = value_s[1];
+            // logger.debug(path);
+            Integer siteI = path.indexOf(SitePathM);
+            Integer streamI = path.indexOf(StreamProxyPathM);
+            Integer sslI = path.indexOf(SSLPathM);
+            if (-1 != siteI || -1 != streamI || -1 != sslI) {
+                // 处理站点反馈
+                String labelName = "";
+                if (-1 != siteI) {
+                    String idp = path.replace(SitePathM, "");
+                    idp = idp.replace("_.conf", "");
+                    idp = idp.replace("/", "");
+                    if (StringUtils.isBlank(idp)) {
                         continue;
                     }
-                    labelName="site_"+idp;
-                }else if(-1!=streamI){
-                    String idp= path.replace(StreamProxyPathM,"");
-                    idp=idp.replace("_.conf","");
-                    idp=idp.replace("/","");
-                    if (StringUtils.isBlank(idp)){
+                    labelName = "site_" + idp;
+                } else if (-1 != streamI) {
+                    String idp = path.replace(StreamProxyPathM, "");
+                    idp = idp.replace("_.conf", "");
+                    idp = idp.replace("/", "");
+                    if (StringUtils.isBlank(idp)) {
                         continue;
                     }
-                    labelName="stream_"+idp;
-                }else if(-1!=sslI){
-                    String idp= path.replace(SSLPathM,"");
-                    idp=idp.replace(".conf","");
-                    idp=idp.replace("/","");
-                    if (StringUtils.isBlank(idp)){
+                    labelName = "stream_" + idp;
+                } else if (-1 != sslI) {
+                    String idp = path.replace(SSLPathM, "");
+                    idp = idp.replace(".conf", "");
+                    idp = idp.replace("/", "");
+                    if (StringUtils.isBlank(idp)) {
                         continue;
                     }
-                    labelName="ssl_"+idp;
+                    labelName = "ssl_" + idp;
                 }
-                if(value_s.length==3){
-                    if(!result.containsKey(labelName)){
-                        result.put(labelName,"wait");
+                if (value_s.length == 3) {
+                    if (!result.containsKey(labelName)) {
+                        result.put(labelName, "wait");
                     }
-                }else if(value_s.length==4){
-                    String feeds=value_s[3];
-                    feeds=feeds.replaceAll("\n",";");
-                   //logger.debug(feeds);
+                } else if (value_s.length == 4) {
+                    String feeds = value_s[3];
+                    feeds = feeds.replaceAll("\n", ";");
+                    // logger.debug(feeds);
                     Matcher m_error = r_error.matcher(feeds);
                     Matcher m_success = r_success.matcher(feeds);
-                    if(m_error.matches()){
-                        logger.error("[error]"+feeds);
-                        result.put(labelName,"danger");
-                    }else if(m_success.matches()){
-                       //logger.debug("[success]"+feeds);
-                        if(!result.containsKey(labelName)){
-                            result.put(labelName,"success");
-                        }else {
-                            String v=result.get(labelName) ;
-                           //logger.debug(v);
-                            if(!v.contains("[emerg]")){
-                                result.put(labelName,"success");
+                    if (m_error.matches()) {
+                        logger.error("[error]" + feeds);
+                        result.put(labelName, "danger");
+                    } else if (m_success.matches()) {
+                        // logger.debug("[success]"+feeds);
+                        if (!result.containsKey(labelName)) {
+                            result.put(labelName, "success");
+                        } else {
+                            String v = result.get(labelName);
+                            // logger.debug(v);
+                            if (!v.contains("[emerg]")) {
+                                result.put(labelName, "success");
                             }
                         }
-                    }else{
-                        logger.error("[unknown]"+feeds);
+                    } else {
+                        logger.error("[unknown]" + feeds);
                     }
                 }
-            }else if(path.contains(commandM)){
-                if(value_s.length>=3){
-                    String NodeIp=value_s[0];
-                    if(3==value_s.length){
-                        result.put(NodeIp,"wait");
-                    }else if(4==value_s.length){
-                        if(StringUtils.isBlank(value_s[3])){
-                            result.put(NodeIp,"-");
-                        }else{
-                            result.put(NodeIp,value_s[3]);
+            } else if (path.contains(commandM)) {
+                if (value_s.length >= 3) {
+                    String NodeIp = value_s[0];
+                    if (3 == value_s.length) {
+                        result.put(NodeIp, "wait");
+                    } else if (4 == value_s.length) {
+                        if (StringUtils.isBlank(value_s[3])) {
+                            result.put(NodeIp, "-");
+                        } else {
+                            result.put(NodeIp, value_s[3]);
                         }
                     }
                 }
             }
-
 
         }
         return result;
     }
 
-
-    private  boolean isInteger(String str) {
+    private boolean isInteger(String str) {
         return pattern.matcher(str).matches();
     }
 
     @Override
     public Object operaDetail(Integer index) {
-        LinkedHashMap map=new LinkedHashMap();
-        Iterator<Map.Entry<String, Object>> entries =StaticVariableUtils.alreadyPushTaskRecordMap.entrySet().iterator();
+        LinkedHashMap map = new LinkedHashMap();
+        Iterator<Map.Entry<String, Object>> entries = StaticVariableUtils.alreadyPushTaskRecordMap.entrySet()
+                .iterator();
         while (entries.hasNext()) {
             Map.Entry<String, Object> entry = entries.next();
             String key = entry.getKey();
             String mapValue = entry.getValue().toString();
-            String[] value_s=mapValue.split("\\|");
-            if(value_s.length<3){
+            String[] value_s = mapValue.split("\\|");
+            if (value_s.length < 3) {
                 entries.remove();
                 continue;
             }
-            if(  isInteger(value_s[2])){
-                Integer thisIndex=Integer.parseInt(value_s[2]) ;
-                if(!index.equals(thisIndex)){
+            if (isInteger(value_s[2])) {
+                Integer thisIndex = Integer.parseInt(value_s[2]);
+                if (!index.equals(thisIndex)) {
                     continue;
-                }else {
-                    map.put(key,mapValue);
+                } else {
+                    map.put(key, mapValue);
                 }
             }
         }
         return map;
     }
 
-    //获取静态变量
-    private Object getIndexKeyValue(String key){
-        Object ret="";
-        switch (key){
+    // 获取静态变量
+    private Object getIndexKeyValue(String key) {
+        Object ret = "";
+        switch (key) {
             case "server_sum":
-                ret=cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>().eq("client_type",1).eq("status",1));
+                ret = cdnClientDao
+                        .selectCount(new QueryWrapper<CdnClientEntity>().eq("client_type", 1).eq("status", 1));
                 break;
             case "site_sum":
-                ret=tbSiteDao.selectCount( null );
+                ret = tbSiteDao.selectCount(null);
                 break;
             case "streamProxy_sum":
-                ret=tbStreamProxyDao.selectCount(null);
+                ret = tbStreamProxyDao.selectCount(null);
                 break;
             case "cert_sum":
-                ret=tbCertifyDao.selectCount(new QueryWrapper<TbCertifyEntity>().isNotNull("obj_info"));
+                ret = tbCertifyDao.selectCount(new QueryWrapper<TbCertifyEntity>().isNotNull("obj_info"));
                 break;
             case "already_pay_sum":
-                if (true){
-                    Map<String,Object> already_pay_map=tbOrderDao.getAlreadyPaySum();
-                    //map.put("staticVariable",StaticVariableUtils.get_static_staticVariable());
-                    if(already_pay_map.containsKey("already_pay")){
-                       ret=already_pay_map.get("already_pay");
-                    }else {
-                        ret=0;
+                if (true) {
+                    Map<String, Object> already_pay_map = tbOrderDao.getAlreadyPaySum();
+                    // map.put("staticVariable",StaticVariableUtils.get_static_staticVariable());
+                    if (already_pay_map.containsKey("already_pay")) {
+                        ret = already_pay_map.get("already_pay");
+                    } else {
+                        ret = 0;
                     }
                 }
                 break;
             case "already_recharge_sum":
-                if (true){
-                    Map<String,Object> already_recharge_map=tbOrderDao.getAlreadyRechargeSum();
-                    if(already_recharge_map.containsKey("already_recharge")){
-                        ret=already_recharge_map.get("already_recharge");
-                    }else {
-                        ret=0;
+                if (true) {
+                    Map<String, Object> already_recharge_map = tbOrderDao.getAlreadyRechargeSum();
+                    if (already_recharge_map.containsKey("already_recharge")) {
+                        ret = already_recharge_map.get("already_recharge");
+                    } else {
+                        ret = 0;
                     }
                 }
                 break;
             case "user_sum":
-                ret=tbUserDao.selectCount(null);
+                ret = tbUserDao.selectCount(null);
                 break;
             case "admin_sum":
-                ret=sysUserDao.selectCount(null);
+                ret = sysUserDao.selectCount(null);
                 break;
             case "app_user_reg_7":
-                ret=tbUserDao.query7regdata();
+                ret = tbUserDao.query7regdata();
                 break;
             case "app_user_login_7":
-                ret=sysUserDao.query7login();
+                ret = sysUserDao.query7login();
                 break;
             case "area_id_sum":
-                ret=cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>().eq("client_type",1).groupBy("area_id"));
+                ret = cdnClientDao
+                        .selectCount(new QueryWrapper<CdnClientEntity>().eq("client_type", 1).groupBy("area_id"));
                 break;
             case "node_sum":
-                ret=cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>().eq("client_type",1));
+                ret = cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>().eq("client_type", 1));
                 break;
             case "doc_list":
-                ret=  HttpRequest.curlHttpGet(QuerySysAuth.getDocList("CDN技术文档"));
+                ret = HttpRequest.curlHttpGet(QuerySysAuth.getDocList("CDN技术文档"));
                 break;
             case "update_log":
-                String  update_str=HttpRequest.curlHttpGet(QuerySysAuth.getUpdateInfoList("3","1","10"));
-                ret=DataTypeConversionUtil.string2Json(update_str);
+                String update_str = HttpRequest.curlHttpGet(QuerySysAuth.getUpdateInfoList("3", "1", "10"));
+                ret = DataTypeConversionUtil.string2Json(update_str);
                 break;
             case "auth_info":
-                ret=DataTypeConversionUtil.string2Json(this.getAuthInfo());
+                ret = DataTypeConversionUtil.string2Json(this.getAuthInfo());
                 break;
             case "cpu":
-                ret=AntsSystemInfoUtils.cpu();
+                ret = AntsSystemInfoUtils.cpu();
                 break;
             case "cpuOshi":
-                ret=AntsSystemInfoUtils.cpuOshi();
+                ret = AntsSystemInfoUtils.cpuOshi();
                 break;
             case "disk":
-                ret=AntsSystemInfoUtils.disk();
+                ret = AntsSystemInfoUtils.disk();
                 break;
             case "mem":
-                ret=AntsSystemInfoUtils.mem();
+                ret = AntsSystemInfoUtils.mem();
                 break;
             case "jvm":
-                ret=AntsSystemInfoUtils.jvm();
+                ret = AntsSystemInfoUtils.jvm();
                 break;
             case "env":
-                ret=AntsSystemInfoUtils.env();
+                ret = AntsSystemInfoUtils.env();
                 break;
             case "master_env":
-                ret=StaticVariableUtils.getStaticStaticVariable();
+                ret = StaticVariableUtils.getStaticStaticVariable();
                 break;
             default:
                 break;
@@ -1099,18 +1111,19 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     /**
      * 首页图表数据源
+     * 
      * @return
      */
     @Override
-    public Map<String, Object> getIndexChartData(String keys)  {
-        Map<String, Object> map=new HashMap<>();
-        if (StringUtils.isBlank(keys)){
+    public Map<String, Object> getIndexChartData(String keys) {
+        Map<String, Object> map = new HashMap<>();
+        if (StringUtils.isBlank(keys)) {
             return map;
         }
-        for (String key:keys.split(",")){
-            try{
-                map.put(key,getIndexKeyValue(key));
-            }catch (Exception e){
+        for (String key : keys.split(",")) {
+            try {
+                map.put(key, getIndexKeyValue(key));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -1119,79 +1132,78 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     @Override
     public R nodeAttrSave(Map param) {
-       if (!param.containsKey("id")){
-           return R.error("id is empty [1]");
-       }
-        CdnClientEntity client=cdnClientDao.selectOne(new QueryWrapper<CdnClientEntity>()
-                .eq("id",param.get("id"))
-                .last("limit 1")
-        );
-       if (null==client){
-           return R.error("id is err 【2】");
-       }
-       param.remove("id");
-       JSONObject clientJson=DataTypeConversionUtil.entity2jsonObj(client);
-       if (null==clientJson){
-           return R.error("id is err 【3】");
-       }
+        if (!param.containsKey("id")) {
+            return R.error("id is empty [1]");
+        }
+        CdnClientEntity client = cdnClientDao.selectOne(new QueryWrapper<CdnClientEntity>()
+                .eq("id", param.get("id"))
+                .last("limit 1"));
+        if (null == client) {
+            return R.error("id is err 【2】");
+        }
+        param.remove("id");
+        JSONObject clientJson = DataTypeConversionUtil.entity2jsonObj(client);
+        if (null == clientJson) {
+            return R.error("id is err 【3】");
+        }
 
-       Map pushMap=new HashMap(8);
+        Map pushMap = new HashMap(8);
 
-       for (Object key:param.keySet()){
-           clientJson.put(key.toString(),param.get(key));
-           //推送
-           switch (key.toString()){
-               case "sysWsStatus":
-                   if ("1".equals(param.get(key).toString())){
-                       pushMap.put(PushTypeEnum.NODE_SYS_WS_STATUS_ON.getName(),client.getClientIp());
-                   } else{
-                       pushMap.put(PushTypeEnum.NODE_SYS_WS_STATUS_OFF.getName(),client.getClientIp());
-                   }
-                   cdnMakeFileService.pushByInputInfo(pushMap);
-                   break;
-               default:
-                   break;
-           }
-       }
-       CdnClientEntity updateClint=DataTypeConversionUtil.json2entity(clientJson,CdnClientEntity.class);
-       if (null!=updateClint){
-           cdnClientDao.updateById(updateClint);
-       }
-       return R.ok();
+        for (Object key : param.keySet()) {
+            clientJson.put(key.toString(), param.get(key));
+            // 推送
+            switch (key.toString()) {
+                case "sysWsStatus":
+                    if ("1".equals(param.get(key).toString())) {
+                        pushMap.put(PushTypeEnum.NODE_SYS_WS_STATUS_ON.getName(), client.getClientIp());
+                    } else {
+                        pushMap.put(PushTypeEnum.NODE_SYS_WS_STATUS_OFF.getName(), client.getClientIp());
+                    }
+                    cdnMakeFileService.pushByInputInfo(pushMap);
+                    break;
+                default:
+                    break;
+            }
+        }
+        CdnClientEntity updateClint = DataTypeConversionUtil.json2entity(clientJson, CdnClientEntity.class);
+        if (null != updateClint) {
+            cdnClientDao.updateById(updateClint);
+        }
+        return R.ok();
     }
 
     @Override
     public R changeMaster(ChangeMasterForm form) {
-        if (!HttpRequest.isPortOpen(form.getMasterIp(),form.getRedisPort())){
-            return R.error("检测"+form.getMasterIp()+":"+form.getRedisPort()+"连接失败！");
+        if (!HttpRequest.isPortOpen(form.getMasterIp(), form.getRedisPort())) {
+            return R.error("检测" + form.getMasterIp() + ":" + form.getRedisPort() + "连接失败！");
         }
-        redisUtils.longSet("migrate:redis",form.getMasterIp()+":"+form.getRedisPort());
-        redisUtils.longSet("migrate:passwd",form.getRedisPwd());
-        Map<String,String> pushInfo=new HashMap<>(8);
+        redisUtils.longSet("migrate:redis", form.getMasterIp() + ":" + form.getRedisPort());
+        redisUtils.longSet("migrate:passwd", form.getRedisPwd());
+        Map<String, String> pushInfo = new HashMap<>(8);
         pushInfo.put(PushTypeEnum.COMMAND.getName(), CommandEnum.MIGRATE.getId().toString());
         cdnMakeFileService.pushByInputInfo(pushInfo);
-        //发送更新迁移主控
+        // 发送更新迁移主控
         this.migrateMaster(form.getMasterIp());
         return R.ok();
     }
 
     @Override
     public R nodeAddIp2Db(AddClientIpForm form) {
-        CdnClientEntity mainClient=cdnClientDao.selectById(form.getId());
-        if (null==mainClient){
+        CdnClientEntity mainClient = cdnClientDao.selectById(form.getId());
+        if (null == mainClient) {
             return R.error("主IP有误");
         }
-        for (String clientIp:form.getClientIps().split(",")){
-            Integer count=cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>().eq("client_ip",clientIp));
-            if(count>0){
-                //logger.debug("clientIp:" +clientIp+" has in backupIpList! ");
+        for (String clientIp : form.getClientIps().split(",")) {
+            Long count = cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>().eq("client_ip", clientIp));
+            if (count > 0) {
+                // logger.debug("clientIp:" +clientIp+" has in backupIpList! ");
                 continue;
             }
-            if(!IPUtils.isValidIPV4(clientIp) && !IPUtils.isValidIPV6(clientIp)){
-                //logger.debug("clientIp:" +clientIp+" not an isValidIPV4! ");
+            if (!IPUtils.isValidIPV4(clientIp) && !IPUtils.isValidIPV6(clientIp)) {
+                // logger.debug("clientIp:" +clientIp+" not an isValidIPV4! ");
                 continue;
             }
-            CdnClientEntity client=new CdnClientEntity();
+            CdnClientEntity client = new CdnClientEntity();
             client.setClientType(form.getClientType());
             client.setParentId(form.getId());
             client.setClientIp(clientIp);
@@ -1205,20 +1217,20 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
 
     @Override
     public R nodeAddBackupIp(Map params) {
-        Integer id=Integer.valueOf(params.get("id").toString());
-        String clientIps=params.get("clientIps").toString();
-        Integer success=0;
-        for (String clientIp:clientIps.split(",")){
-            Integer count=cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>().eq("client_ip",clientIp));
-            if(count>0){
-                //logger.debug("clientIp:" +clientIp+" has in backupIpList! ");
+        Integer id = Integer.valueOf(params.get("id").toString());
+        String clientIps = params.get("clientIps").toString();
+        Integer success = 0;
+        for (String clientIp : clientIps.split(",")) {
+            Long count = cdnClientDao.selectCount(new QueryWrapper<CdnClientEntity>().eq("client_ip", clientIp));
+            if (count > 0) {
+                // logger.debug("clientIp:" +clientIp+" has in backupIpList! ");
                 continue;
             }
-            if(!IPUtils.isValidIPV4(clientIp)){
-                //logger.debug("clientIp:" +clientIp+" not an isValidIPV4! ");
+            if (!IPUtils.isValidIPV4(clientIp)) {
+                // logger.debug("clientIp:" +clientIp+" not an isValidIPV4! ");
                 continue;
             }
-            CdnClientEntity backupClient=new CdnClientEntity();
+            CdnClientEntity backupClient = new CdnClientEntity();
             backupClient.setClientType(3);
             backupClient.setParentId(id);
             backupClient.setClientIp(clientIp);
@@ -1226,27 +1238,27 @@ public class CdnSysAuthServiceImpl implements CdnSysAuthService {
             insertClientToDb(backupClient);
             success++;
         }
-        return R.ok().put("success",success);
+        return R.ok().put("success", success);
     }
 
     @Override
     public R nodeAddByNodeHttpRequest() {
         HttpServletRequest request = HttpContextUtils.getHttpServletRequest();
-        String ip=IPUtils.getIpAddr(request);
-        CdnClientEntity r_client=cdnClientDao.selectOne(new QueryWrapper<CdnClientEntity>().eq("client_ip",ip).last("limit 1"));
-        if(null==r_client){
-            CdnClientEntity new_client=new CdnClientEntity();
+        String ip = IPUtils.getIpAddr(request);
+        CdnClientEntity r_client = cdnClientDao
+                .selectOne(new QueryWrapper<CdnClientEntity>().eq("client_ip", ip).last("limit 1"));
+        if (null == r_client) {
+            CdnClientEntity new_client = new CdnClientEntity();
             new_client.setStatus(ClientStatusEnum.UNKNOWN.getId());
             new_client.setClientType(1);
             new_client.setClientIp(ip);
             new_client.setStableScore(0);
             insertClientToDb(new_client);
-            return R.ok().put("data",null).put("ip",ip);
+            return R.ok().put("data", null).put("ip", ip);
+        } else if (null != r_client.getEffectiveEndingTime() && r_client.getEffectiveEndingTime().after(new Date())) {
+            return R.ok().put("data", r_client).put("ip", ip);
         }
-        else if(null!=r_client.getEffectiveEndingTime() && r_client.getEffectiveEndingTime().after(new Date())){
-            return R.ok().put("data",r_client).put("ip",ip);
-        }
-        return R.ok().put("data",null).put("ip",ip);
+        return R.ok().put("data", null).put("ip", ip);
     }
 
 }
